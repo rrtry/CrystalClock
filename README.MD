@@ -25,6 +25,8 @@ Additional flags:
 ```
 -fullscreen -borderless -undecorated
 ```
+# Controls
+Press j to alternate between 'clock' mode and 'orbs only' mode
 # Screenshots
 ![Clock1](/images/clock1.png "Clock preview")
 ![Clock2](/images/clock2.png "Clock preview")
