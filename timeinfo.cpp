@@ -34,7 +34,7 @@ void GetLocalTime(Time* timeInfo, TimePoint now)
 #ifdef _WIN32
     localtime_s(&local_time, &now_time_t);
 #else
-    localtime_r(&local_time, &now_time_t);
+    localtime_r(&now_time_t, &local_time);
 #endif
 
     int year   = local_time.tm_year;
