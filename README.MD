@@ -10,7 +10,7 @@ cmake --build build --config Release
 Binary will appear in bin/Release directory. Copy resources/ directory there or create a symlink:
 ## POSIX
 ```
-ln -s resources ../../resources
+ln -s ../../resources resources 
 ```
 ## Windows
 ```
