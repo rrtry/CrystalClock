@@ -6,7 +6,7 @@
 constexpr auto CMD_WIDTH  = "-width";
 constexpr auto CMD_HEIGHT = "-height";
 
-constexpr auto CMD_WIDTH_SHORT = "-w";
+constexpr auto CMD_WIDTH_SHORT  = "-w";
 constexpr auto CMD_HEIGHT_SHORT = "-h";
 
 constexpr auto CMD_DISPLAY = "-display";
@@ -20,9 +20,7 @@ struct Config
 {
 	int screenWidth;
 	int screenHeight;
-
 	int display;
-
 	int flags;
 };
 
