@@ -16,8 +16,11 @@ map<string, CMDParameter> argsMap = {
 	{ CMD_WIDTH,  { WIDTH,  true }},
 	{ CMD_HEIGHT, { HEIGHT, true }},
 
-	{ CMD_SHORT_WIDTH,  { WIDTH,  true }},
-	{ CMD_SHORT_HEIGHT, { HEIGHT, true }},
+	{ CMD_WIDTH_SHORT,  { WIDTH,  true }},
+	{ CMD_HEIGHT_SHORT, { HEIGHT, true }},
+
+	{ CMD_DISPLAY, 		 { DISPLAY, true }},
+	{ CMD_DISPLAY_SHORT, { DISPLAY, true }},
 
 	{ CMD_BORDERLESS,  { BORDERLESS,  false }},
 	{ CMD_FULLSCREEN,  { FULLSCREEN,  false }},
@@ -94,6 +97,18 @@ bool ParseCMD(Config& config, int argc, char** argv, string& err)
 				}
 				config.screenHeight = height;
 				hasHeight = true;
+			}
+			break;
+
+			case DISPLAY:
+			{
+				int display = ParseInt(currCmd);
+				if (display < 0)
+				{
+					err = "Invalud value passed to: " + lastCmd;
+					return false;
+				}
+				config.display = display;
 			}
 			break;
 		}

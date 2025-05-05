@@ -6,8 +6,11 @@
 constexpr auto CMD_WIDTH  = "-width";
 constexpr auto CMD_HEIGHT = "-height";
 
-constexpr auto CMD_SHORT_WIDTH  = "-w";
-constexpr auto CMD_SHORT_HEIGHT = "-h";
+constexpr auto CMD_WIDTH_SHORT  = "-w";
+constexpr auto CMD_HEIGHT_SHORT = "-h";
+
+constexpr auto CMD_DISPLAY = "-display";
+constexpr auto CMD_DISPLAY_SHORT = "-d";
 
 constexpr auto CMD_BORDERLESS  = "-borderless";
 constexpr auto CMD_FULLSCREEN  = "-fullscreen";
@@ -17,6 +20,7 @@ struct Config
 {
 	int screenWidth;
 	int screenHeight;
+	int display;
 	int flags;
 };
 
@@ -27,7 +31,9 @@ enum Argument
 
 	BORDERLESS,
 	FULLSCREEN,
-	UNDECORATED
+	UNDECORATED,
+
+	DISPLAY
 };
 
 struct CMDParameter

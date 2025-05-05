@@ -21,6 +21,14 @@ Specify width and height of the window:
 ```
 crystalclock.exe -width 1920 -height 1080
 ```
+Specify which display the program should appear on:
+```
+crystalclock.exe -width 1920 -height 1080 -display 1
+```
+Shorter form:
+```
+crystalclock.exe -w 1920 -h 1080 -d 1
+```
 Additional flags:
 ```
 -fullscreen -borderless -undecorated

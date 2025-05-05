@@ -259,11 +259,25 @@ int main(int argc, char** argv)
     const char* timeLocale = setlocale(LC_TIME, nullptr);
 
     //------------------------------------------------------------------------------------
-    // Camaera/window initialization
+    // Camera/window initialization
     //------------------------------------------------------------------------------------
 
     SetConfigFlags(cfg.flags);
     InitWindow(screenWidth, screenHeight, "PS2 Clock");
+
+    //------------------------------------------------------------------------------------
+    // Retrieve display count
+    //------------------------------------------------------------------------------------
+
+    int display      = cfg.display;
+    int displayCount = GetMonitorCount();
+
+    //------------------------------------------------------------------------------------
+    // Attempting to move window to specified display
+    //------------------------------------------------------------------------------------
+    
+    if (display < displayCount && display > -1)
+        SetWindowMonitor(display);
 
     camera = { 0 };
     InitCamera();
