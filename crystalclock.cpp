@@ -12,6 +12,9 @@ using namespace std;
 int screenWidth  = 1920;
 int screenHeight = 1080;
 
+int display = 0;
+int displayCount = 0;
+
 const Vector3 PRISM_COLORS[] = {
     { 0.04, 0.23, 0.46 },
     { 0.17, 0.03, 0.45 },
@@ -251,6 +254,8 @@ int main(int argc, char** argv)
     screenWidth  = cfg.screenWidth;
     screenHeight = cfg.screenHeight;
 
+    display = cfg.display;
+
     //------------------------------------------------------------------------------------
     // Retrieve time locale
     //------------------------------------------------------------------------------------
@@ -259,11 +264,29 @@ int main(int argc, char** argv)
     const char* timeLocale = setlocale(LC_TIME, nullptr);
 
     //------------------------------------------------------------------------------------
-    // Camaera/window initialization
+    // Camera/window initialization
     //------------------------------------------------------------------------------------
 
     SetConfigFlags(cfg.flags);
     InitWindow(screenWidth, screenHeight, "PS2 Clock");
+
+    //------------------------------------------------------------------------------------
+    // Retrieve display count
+    //------------------------------------------------------------------------------------
+
+    displayCount = GetMonitorCount();
+
+    //------------------------------------------------------------------------------------
+    // Attempting to move window to specified display
+    //------------------------------------------------------------------------------------
+    if(display < displayCount && display >-1)
+    {
+        SetWindowMonitor(display);
+    }
+    else
+    {
+        SetWindowMonitor(0);
+    }
 
     camera = { 0 };
     InitCamera();
