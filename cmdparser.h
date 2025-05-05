@@ -6,6 +6,9 @@
 constexpr auto CMD_WIDTH  = "-width";
 constexpr auto CMD_HEIGHT = "-height";
 
+constexpr auto CMD_SHORT_WIDTH  = "-w";
+constexpr auto CMD_SHORT_HEIGHT = "-h";
+
 constexpr auto CMD_BORDERLESS  = "-borderless";
 constexpr auto CMD_FULLSCREEN  = "-fullscreen";
 constexpr auto CMD_UNDECORATED = "-undecorated";

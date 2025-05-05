@@ -16,6 +16,9 @@ map<string, CMDParameter> argsMap = {
 	{ CMD_WIDTH,  { WIDTH,  true }},
 	{ CMD_HEIGHT, { HEIGHT, true }},
 
+	{ CMD_SHORT_WIDTH,  { WIDTH,  true }},
+	{ CMD_SHORT_HEIGHT, { HEIGHT, true }},
+
 	{ CMD_BORDERLESS,  { BORDERLESS,  false }},
 	{ CMD_FULLSCREEN,  { FULLSCREEN,  false }},
 	{ CMD_UNDECORATED, { UNDECORATED, false }}
@@ -35,7 +38,6 @@ int ParseInt(const string& cmd)
 
 bool ParseCMD(Config& config, int argc, char** argv, string& err)
 {
-	// prog.exe -width 1920 -height 1080
 	if (argc < 5)
 	{
 		err = "Not enough arguments";
