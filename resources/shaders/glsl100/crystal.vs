@@ -19,10 +19,10 @@ varying mat3 TBN;
 
 mat3 transpose(mat3 m) {
     return mat3(
-        vec3(m[0][0], m[1][0], m[2][0]),
-        vec3(m[0][1], m[1][1], m[2][1]),
-        vec3(m[0][2], m[1][2], m[2][2])
-    );
+		vec3(m[0].x, m[1].x, m[2].x),
+		vec3(m[0].y, m[1].y, m[2].y),
+		vec3(m[0].z, m[1].z, m[2].z)
+	);
 }
 
 void main()

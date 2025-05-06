@@ -58,7 +58,7 @@ vec3 CalcRefraction(vec3 N);
 
 void main()
 {
-    vec3 norm = texture2D(normalMap, fragTexCoord).rgb;
+    vec3 norm = texture2D(normalMap, fract(fragTexCoord)).rgb;
 	norm = norm * 2.0 - 1.0;
 	norm = normalize(TBN * norm);
 	
