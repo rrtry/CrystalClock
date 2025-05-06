@@ -2,7 +2,7 @@
 #include "raymath.h"
 #include "rlgl.h"
 #include "timeinfo.h"
-#include "cmdparser.h"
+#include "config.h"
 
 #include <iostream>
 #include <clocale>
@@ -240,12 +240,15 @@ int main(int argc, char** argv)
     //------------------------------------------------------------------------------------
 
     Config cfg = { 0 };
-    string err;
+    string err = "";
 
     if (!ParseCMD(cfg, argc, argv, err))
     {
-        cerr << err << endl;
-        return 1;
+        if (!ParseINI(cfg, "resources/config.ini"))
+        {
+            cerr << "Could not read config" << endl;
+            return 1;
+        }
     }
 
     screenWidth  = cfg.screenWidth;

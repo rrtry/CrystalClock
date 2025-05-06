@@ -27,7 +27,7 @@ endif()
 
 # Our Project
 
-add_executable(${PROJECT_NAME} cmdparser.cpp cmdparser.h crystalclock.cpp timeinfo.cpp timeinfo.h)
+add_executable(${PROJECT_NAME} config.cpp config.h crystalclock.cpp timeinfo.cpp timeinfo.h)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 

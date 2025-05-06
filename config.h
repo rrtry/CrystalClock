@@ -1,5 +1,5 @@
-#ifndef CMDPARSER_H
-#define CMDPARSER_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
 #include <string>
 
@@ -43,5 +43,7 @@ struct CMDParameter
 };
 
 bool ParseCMD(Config& cfg, int argc, char** argv, std::string& err);
+bool ParseINI(Config& cfg, const std::string& path);
+
 #endif
 
