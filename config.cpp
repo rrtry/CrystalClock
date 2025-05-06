@@ -193,10 +193,10 @@ bool ParseINI(Config& cfg, const string& path)
         rtrim(key);
         rtrim(value);
 
-        if (value.at(0) == '"' && value.at(size(value) - 1) == '"')
+        if (value.at(0) == '"' && value.at(value.length() - 1) == '"')
         {
             value.erase(0, 1);
-            value.erase(size(value) - 1, 1);
+            value.erase(value.length() - 1, 1);
         }
 
 		key = '-' + key;

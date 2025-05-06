@@ -7,6 +7,12 @@
 #include <iostream>
 #include <clocale>
 
+#if defined(PLATFORM_WEB)
+    #define GLSL_VERSION 100
+#else
+    #define GLSL_VERSION 330
+#endif
+
 using namespace std;
 
 int screenWidth  = 1920;
@@ -319,9 +325,10 @@ int main(int argc, char** argv)
     Vector3 startColor = { 1.f, 0.25f,  1.0f };
     Vector3 endColor   = { 0.25f, 1.0f, 1.0f };
 
-    Shader crystalShader = LoadShader("resources/shaders/crystal.vs", "resources/shaders/crystal.fs");
-    Shader tunnelShader  = LoadShader("resources/shaders/tunnel.vs",  "resources/shaders/tunnel.fs");
-    Shader orbShader     = LoadShader(NULL, "resources/shaders/orb.fs");
+    string glslDirectory = "resources/shaders/glsl" + to_string(GLSL_VERSION);
+    Shader crystalShader = LoadShader((glslDirectory + "/crystal.vs").c_str(), (glslDirectory + "/crystal.fs").c_str());
+    Shader tunnelShader  = LoadShader((glslDirectory + "/tunnel.vs").c_str(),  (glslDirectory + "/tunnel.fs").c_str());
+    Shader orbShader     = LoadShader(NULL, (glslDirectory + "/orb.fs").c_str());
 
     //------------------------------------------------------------------------------------
     // Crystal rod

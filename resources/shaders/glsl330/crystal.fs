@@ -59,7 +59,8 @@ vec3 CalcRefraction(vec3 N);
 void main()
 {
     vec3 norm = texture(normalMap, fragTexCoord).rgb;
-	norm = normalize(norm * 2.0 - 1.0);
+	norm = norm * 2.0 - 1.0;
+	norm = normalize(TBN * norm);
 	
 	vec3 tanViewDir = normalize((TBN * viewPos) - tanFragPosition);
     vec3 viewDir    = normalize(viewPos - fragPosition);
