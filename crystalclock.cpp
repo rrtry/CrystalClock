@@ -271,7 +271,7 @@ int main(int argc, char** argv)
     // Camera/window initialization
     //------------------------------------------------------------------------------------
 
-    SetConfigFlags(cfg.flags);
+    SetConfigFlags(cfg.flags | FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "PS2 Clock");
 
     //------------------------------------------------------------------------------------
@@ -456,6 +456,22 @@ int main(int argc, char** argv)
         //------------------------------------------------------------------------------------
         // Update
         //------------------------------------------------------------------------------------
+        if (IsWindowResized() && !IsWindowFullscreen())
+        {
+            screenWidth  = GetScreenWidth();
+            screenHeight = GetScreenHeight();
+
+            UnloadRenderTexture(tunnelLayer);
+            UnloadRenderTexture(orbsLayer);
+            UnloadRenderTexture(clockLayer);
+
+            tunnelLayer = LoadRenderTexture(screenWidth, screenHeight);
+            orbsLayer   = LoadRenderTexture(screenWidth, screenHeight);
+            clockLayer  = LoadRenderTexture(screenWidth, screenHeight);
+
+            SetWindowSize(screenWidth, screenHeight);
+        }
+
         UpdateMusicStream(ambience);
         GetTimeInfo(&time);
         GetElapsedSeconds(&elapsedSeconds, time);
