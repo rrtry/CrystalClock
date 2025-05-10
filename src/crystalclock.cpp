@@ -120,7 +120,6 @@ void DrawOrbs(Model& prism, ElapsedSeconds seconds, Time time, float radius)
     Vector3 orbPosition;
     Matrix rotation = GetRotationMatrix(seconds, time, hourAngle);
 
-    float orbAlpha;
     for (int i = 0; i < ORBS; i++)
     {
         orbPosition = GetOrbPosition(elapsedSeconds, radius, i, rotation);
@@ -271,7 +270,7 @@ int main(int argc, char** argv)
     // Camera/window initialization
     //------------------------------------------------------------------------------------
 
-    SetConfigFlags(cfg.flags);
+    SetConfigFlags(cfg.flags | FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "PS2 Clock");
 
     //------------------------------------------------------------------------------------
@@ -431,7 +430,7 @@ int main(int argc, char** argv)
     bool fading;
 
     bool showClock = true;
-    bool playing   = true;
+    bool showTime  = true;
 
     Color clockLayerTint = BLACK;
     Color orbLayerTint   = BLACK;
@@ -456,6 +455,22 @@ int main(int argc, char** argv)
         //------------------------------------------------------------------------------------
         // Update
         //------------------------------------------------------------------------------------
+        if (IsWindowResized() && !IsWindowFullscreen())
+        {
+            screenWidth  = GetScreenWidth();
+            screenHeight = GetScreenHeight();
+
+            UnloadRenderTexture(tunnelLayer);
+            UnloadRenderTexture(orbsLayer);
+            UnloadRenderTexture(clockLayer);
+
+            tunnelLayer = LoadRenderTexture(screenWidth, screenHeight);
+            orbsLayer   = LoadRenderTexture(screenWidth, screenHeight);
+            clockLayer  = LoadRenderTexture(screenWidth, screenHeight);
+
+            SetWindowSize(screenWidth, screenHeight);
+        }
+
         UpdateMusicStream(ambience);
         GetTimeInfo(&time);
         GetElapsedSeconds(&elapsedSeconds, time);
@@ -469,8 +484,17 @@ int main(int argc, char** argv)
         clockMinuteRotation = LerpClockRotation(secondsInMinute);
         clockHourRotation   = GetClockRotationAngle(time.hour);
         newHour             = (int)roundf(secondsInHour) == 0 || sphereRadiusAnim > 0.f || prismScaleAnim > 0.f;
-        fading              = IsKeyPressed(KEY_J) || fadeAnim > 0.f;
 
+        //------------------------------------------------------------------------------------
+        // Controls
+        //------------------------------------------------------------------------------------
+        fading = IsKeyPressed(KEY_J) || fadeAnim > 0.f;
+        if (IsKeyPressed(KEY_K))
+            showTime = !showTime;
+
+        //------------------------------------------------------------------------------------
+        // Animations
+        //------------------------------------------------------------------------------------
         if (elapsedTime < START_FADE_TIME)
         {
             Vector3 tint = Vector3Lerp(
@@ -610,7 +634,8 @@ int main(int argc, char** argv)
                 rlSetBlendMode(RL_BLEND_ADDITIVE);
                 DrawTextureRec(clockLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
 
-                DrawDateTime(time, timeLocale);
+                if (showTime)
+                    DrawDateTime(time, timeLocale);
             }
             DrawTextureRec(orbsLayer.texture,  { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, orbLayerTint);
         EndDrawing();

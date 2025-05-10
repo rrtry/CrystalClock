@@ -156,7 +156,7 @@ bool ParseINI(Config& cfg, const string& path)
     ifstream ifs(path);
 
     if (!ifs.is_open())
-        return 1;
+        return false;
 
     string line;
     string key;
