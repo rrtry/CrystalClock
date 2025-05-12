@@ -144,6 +144,7 @@ void DrawClock(Model& prism, Vector3& clockPosition,
         Matrix M, N, R;
         R = MatrixRotateY(secOfMinRotation * 4.f * DEG2RAD);
         M = MatrixIdentity();
+        M = MatrixTranslate(0.f, 5.f, 0.f);
         M = MatrixMultiply(M, MatrixRotateZ(angle * DEG2RAD));
         M = MatrixMultiply(M, MatrixRotateY(-secOfMinRotation * DEG2RAD));
         M = MatrixMultiply(M, MatrixRotateZ(hourOfDayRotation * DEG2RAD));
@@ -408,7 +409,7 @@ int main(int argc, char** argv)
     GetTimeInfo(&time);
     GetElapsedSeconds(&elapsedSeconds, time);
 
-    Vector3 clockPosition  = { 0.0f, 5.0f, 0.0f };
+    Vector3 clockPosition  = { 0.0f, 0.0f, 0.0f };
     Vector3 prismColor     = LerpPrismColor(elapsedSeconds.minute);
 
     float elapsedTime;
