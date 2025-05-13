@@ -1,17 +1,15 @@
-cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
+cmake_minimum_required(VERSION 3.11)
 project(CrystalClock)
 
-# Generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/../bin/Debug")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/../bin/Release")
 set(CMAKE_CXX_STANDARD 11)
 
-# Dependencies
 set(RAYLIB_VERSION 5.5)
-find_package(raylib ${RAYLIB_VERSION} QUIET) # QUIET or REQUIRED
-if (NOT raylib_FOUND) # If there's none, fetch and build raylib
+find_package(raylib ${RAYLIB_VERSION} QUIET)
+if (NOT raylib_FOUND)
   include(FetchContent)
   FetchContent_Declare(
     raylib
@@ -19,20 +17,16 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
     URL https://github.com/raysan5/raylib/archive/refs/tags/${RAYLIB_VERSION}.tar.gz
   )
   FetchContent_GetProperties(raylib)
-  if (NOT raylib_POPULATED) # Have we downloaded raylib yet?
+  if (NOT raylib_POPULATED)
     set(FETCHCONTENT_QUIET NO)
     FetchContent_MakeAvailable(raylib)
   endif()
 endif()
 
-# Our Project
 add_executable(${PROJECT_NAME} src/config.cpp src/config.h src/crystalclock.cpp src/timeinfo.cpp src/timeinfo.h)
-#set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
 
-# Web Configurations
 if (${PLATFORM} STREQUAL "Web")
-    set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html") # Tell Emscripten to build an example.html file.
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
     -s USE_GLFW=3 \
     -s ASSERTIONS=1 \
