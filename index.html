@@ -10,7 +10,8 @@
 <body>
     <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     <script type='text/javascript'>
-        
+
+        var render   = true;
         var canv     = document.getElementById('canvas');
         const width  = window.innerWidth;        
         const height = window.innerHeight;
@@ -19,6 +20,15 @@
             arguments: ['-w', width.toString(), '-h', height.toString()],
             canvas: canv
         };
+
+        document.addEventListener("visibilitychange", () => {
+            Module.ccall(
+                    'set_visibility',
+                    null,
+                    ['boolean'],
+                    [ !document.hidden ]
+            );
+        });
     </script>
     <script async src="CrystalClock.js"></script>
 </body>
