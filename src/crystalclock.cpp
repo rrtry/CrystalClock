@@ -53,6 +53,16 @@ const double CAMERA_FAR_PLANE  = 100.0;
 Camera camera;
 Texture2D orbTexture;
 
+/* Call from frontend using ccall/cwrap */
+extern "C"
+{
+    bool is_visible = true;
+    void set_visibility(bool visible)
+    {
+        is_visible = visible;
+    }
+}
+
 float GetOrbRotationAngle(float time, int i) 
 {
     return time * i * ANGLE_STEP * DEG2RAD;
@@ -465,6 +475,11 @@ int main(int argc, char** argv)
         //------------------------------------------------------------------------------------
         // Update
         //------------------------------------------------------------------------------------
+        UpdateMusicStream(ambience);
+        if (IsWindowHidden() || IsWindowMinimized() || !is_visible)
+        {
+            continue;
+        }
         if (IsWindowResized() && !IsWindowFullscreen())
         {
             screenWidth  = GetScreenWidth();
@@ -482,7 +497,6 @@ int main(int argc, char** argv)
             camera.fovy = GetVerticalFOV();
         }
 
-        UpdateMusicStream(ambience);
         GetTimeInfo(&time);
         GetElapsedSeconds(&elapsedSeconds, time);
 
