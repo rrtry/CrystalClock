@@ -40,6 +40,8 @@ const float PRISM_SCALE_TIME  = 1.5f;
 const float FADE_TIME         = 2.0f;
 const float START_FADE_TIME   = 4.0f;
 
+const float FIXED_FOV = 60.f;
+
 const float X_SPEED    = PI / 2;
 const float Z_SPEED    = -PI;
 const float ANGLE_STEP = 360.f / 60.f;
@@ -144,7 +146,6 @@ void DrawClock(Model& prism, Vector3& clockPosition,
         Matrix M, N, R;
         R = MatrixRotateY(secOfMinRotation * 4.f * DEG2RAD);
         M = MatrixIdentity();
-        M = MatrixTranslate(0.f, 5.f, 0.f);
         M = MatrixMultiply(M, MatrixRotateZ(angle * DEG2RAD));
         M = MatrixMultiply(M, MatrixRotateY(-secOfMinRotation * DEG2RAD));
         M = MatrixMultiply(M, MatrixRotateZ(hourOfDayRotation * DEG2RAD));
@@ -177,6 +178,16 @@ void DrawClock(Model& prism, Vector3& clockPosition,
     }
 }
 
+float GetVerticalFOV()
+{
+    if (screenHeight > screenWidth) 
+    {
+        float aspect = (float)screenWidth / screenHeight;
+        return 2.0f * atanf(tanf(FIXED_FOV * DEG2RAD * 0.5f) / aspect) * RAD2DEG;
+    }
+    return FIXED_FOV;
+}
+
 void InitCamera() 
 {
     Vector3 position = { 0.0f, 0.0f, 30.f };
@@ -187,7 +198,7 @@ void InitCamera()
     camera.target   = target;
     camera.up       = up;
 
-    camera.fovy = 60.f;
+    camera.fovy = GetVerticalFOV();
     camera.projection = CAMERA_PERSPECTIVE;
 }
 
@@ -322,8 +333,6 @@ int main(int argc, char** argv)
     //------------------------------------------------------------------------------------
     // Shaders/materials
     //------------------------------------------------------------------------------------
-    Vector3 startColor = { 1.f, 0.25f,  1.0f };
-    Vector3 endColor   = { 0.25f, 1.0f, 1.0f };
 
     string glslDirectory = "resources/shaders/glsl" + to_string(GLSL_VERSION);
     Shader crystalShader = LoadShader((glslDirectory + "/crystal.vs").c_str(), (glslDirectory + "/crystal.fs").c_str());
@@ -409,7 +418,7 @@ int main(int argc, char** argv)
     GetTimeInfo(&time);
     GetElapsedSeconds(&elapsedSeconds, time);
 
-    Vector3 clockPosition  = { 0.0f, 0.0f, 0.0f };
+    Vector3 clockPosition  = { 0.0f, 5.0f, 0.0f };
     Vector3 prismColor     = LerpPrismColor(elapsedSeconds.minute);
 
     float elapsedTime;
@@ -470,6 +479,7 @@ int main(int argc, char** argv)
             clockLayer  = LoadRenderTexture(screenWidth, screenHeight);
 
             SetWindowSize(screenWidth, screenHeight);
+            camera.fovy = GetVerticalFOV();
         }
 
         UpdateMusicStream(ambience);
