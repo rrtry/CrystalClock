@@ -23,7 +23,7 @@ if (NOT raylib_FOUND)
   endif()
 endif()
 
-add_executable(${PROJECT_NAME} src/config.cpp src/config.h src/crystalclock.cpp src/timeinfo.cpp src/timeinfo.h)
+add_executable(${PROJECT_NAME} src/config.cpp src/config.h src/clock.cpp src/clock.h src/timeinfo.cpp src/timeinfo.h)
 target_link_libraries(${PROJECT_NAME} raylib)
 
 if (${PLATFORM} STREQUAL "Web")
