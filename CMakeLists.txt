@@ -39,8 +39,7 @@ if (${PLATFORM} STREQUAL "Web")
     -s WASM=1 \
     -s ASYNCIFY \
     -s GL_ENABLE_GET_PROC_ADDRESS=1 \
-    -sEXPORTED_RUNTIME_METHODS=HEAPF32,ccall,cwrap \
-    -sEXPORTED_FUNCTIONS=_main,_start_loop,_stop_loop,_loop_iter \
+    -sEXPORTED_RUNTIME_METHODS=HEAPF32 \
     --preload-file ${CMAKE_SOURCE_DIR}/resources@/resources")
 endif()
 
