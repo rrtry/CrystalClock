@@ -11,8 +11,8 @@
     <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     <script type='text/javascript'>
 
-        var render   = true;
-        var canv     = document.getElementById('canvas');
+        var canv = document.getElementById('canvas');
+
         const width  = window.innerWidth;        
         const height = window.innerHeight;
 
@@ -22,11 +22,12 @@
         };
 
         document.addEventListener("visibilitychange", () => {
+            const f = document.hidden ? 'stop_loop' : 'start_loop'
             Module.ccall(
-                    'set_visibility',
-                    null,
-                    ['boolean'],
-                    [ !document.hidden ]
+                f,
+                null,
+                null,
+                null        
             );
         });
     </script>
