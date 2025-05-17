@@ -11,7 +11,8 @@
     <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     <script type='text/javascript'>
 
-        var canv = document.getElementById('canvas');
+        var canv   = document.getElementById('canvas');
+        var active = false; 
 
         const width  = window.innerWidth;        
         const height = window.innerHeight;
@@ -20,16 +21,7 @@
             arguments: ['-w', width.toString(), '-h', height.toString()],
             canvas: canv
         };
-
-        document.addEventListener("visibilitychange", () => {
-            const f = document.hidden ? 'stop_loop' : 'start_loop'
-            Module.ccall(
-                f,
-                null,
-                null,
-                null        
-            );
-        });
+        
     </script>
     <script async src="CrystalClock.js"></script>
 </body>
