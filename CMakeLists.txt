@@ -23,10 +23,16 @@ if (NOT raylib_FOUND)
   endif()
 endif()
 
-add_executable(${PROJECT_NAME} src/config.cpp src/config.h src/clock.cpp src/clock.h src/timeinfo.cpp src/timeinfo.h)
-target_link_libraries(${PROJECT_NAME} raylib)
+if (${PLATFORM} STREQUAL "Desktop")
+    add_executable(${PROJECT_NAME} src/main.cpp src/config.cpp src/config.h src/clock.cpp src/clock.h src/timeinfo.cpp src/timeinfo.h)
+    target_link_libraries(${PROJECT_NAME} raylib)
+endif()
 
 if (${PLATFORM} STREQUAL "Web")
+
+    add_executable(${PROJECT_NAME} src/emscripten_main.cpp src/config.cpp src/config.h src/clock.cpp src/clock.h src/timeinfo.cpp src/timeinfo.h)
+    target_link_libraries(${PROJECT_NAME} raylib)
+    
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
     -s USE_GLFW=3 \
     -s ASSERTIONS=1 \
@@ -34,7 +40,7 @@ if (${PLATFORM} STREQUAL "Web")
     -s ASYNCIFY \
     -s GL_ENABLE_GET_PROC_ADDRESS=1 \
     -sEXPORTED_RUNTIME_METHODS=HEAPF32,ccall,cwrap \
-    -sEXPORTED_FUNCTIONS=_main,_set_visibility \
+    -sEXPORTED_FUNCTIONS=_main,_start_loop,_stop_loop,_loop_iter \
     --preload-file ${CMAKE_SOURCE_DIR}/resources@/resources")
 endif()
 

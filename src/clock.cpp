@@ -129,16 +129,6 @@ bool showTime  = true;
 Color clockLayerTint = BLACK;
 Color orbLayerTint   = BLACK;
 
-/* Call from frontend using ccall/cwrap */
-extern "C"
-{
-    bool is_visible = true;
-    void set_visibility(bool visible)
-    {
-        is_visible = visible;
-    }
-}
-
 //------------------------------------------------------------------------------------
 // Math functions
 //------------------------------------------------------------------------------------
@@ -339,6 +329,7 @@ bool ParseConfig(int argc, char** argv)
     //------------------------------------------------------------------------------------
     setlocale(LC_ALL, "");
     timeLocale = setlocale(LC_TIME, nullptr);
+    
     return true;
 }
 
@@ -532,7 +523,7 @@ void SetRenderOptions()
 
 void ResizeWindow()
 {
-    if (IsWindowHidden() || IsWindowMinimized() || !is_visible)
+    if (IsWindowHidden() || IsWindowMinimized())
     {
         return;
     }
@@ -735,7 +726,7 @@ bool Initialize(int argc, char** argv)
     // Parse command line parameters
     //------------------------------------------------------------------------------------
     if (!ParseConfig(argc, argv))
-        return 1;
+        return false;
 
     //------------------------------------------------------------------------------------
     // Camera/window initialization
@@ -751,6 +742,7 @@ bool Initialize(int argc, char** argv)
     // Setting render options
     //------------------------------------------------------------------------------------
     SetRenderOptions();
+    return true;
 }
 
 void DestroyWindow()
@@ -758,7 +750,7 @@ void DestroyWindow()
     CloseWindow();
 }
 
-void Unintialize()
+void Uninitialize()
 {
     UnloadResources();
     CloseWindow();
@@ -766,20 +758,6 @@ void Unintialize()
 
 void Loop()
 {
-    while (!WindowShouldClose())
-    {
-        Update();
-        Render();
-    }
-}
-
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-int main(int argc, char** argv)
-{
-    Initialize(argc, argv);
-    Loop();
-    Unintialize();
-    return 0;
+    Update();
+    Render();
 }
