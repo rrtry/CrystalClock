@@ -130,6 +130,12 @@ Color clockLayerTint = BLACK;
 Color orbLayerTint   = BLACK;
 
 //------------------------------------------------------------------------------------
+// Gesture contols
+//------------------------------------------------------------------------------------
+int currentGesture = GESTURE_NONE;
+int lastGesture    = GESTURE_NONE;
+
+//------------------------------------------------------------------------------------
 // Math functions
 //------------------------------------------------------------------------------------
 float GetOrbRotationAngle(float time, int i)
@@ -309,6 +315,9 @@ float InvLerpPrismScale(float t)
     return Lerp(0.f, 1.f, Normalize(t, 0.f, PRISM_SCALE_TIME));
 }
 
+//------------------------------------------------------------------------------------
+// Game loop / Initialization functions
+//------------------------------------------------------------------------------------
 bool ParseConfig(int argc, char** argv)
 {
     string err = "";
@@ -333,9 +342,6 @@ bool ParseConfig(int argc, char** argv)
     return true;
 }
 
-//------------------------------------------------------------------------------------
-// Game loop / Initialization functions
-//------------------------------------------------------------------------------------
 float GetVerticalFOV()
 {
     if (screenHeight > screenWidth)
@@ -545,9 +551,41 @@ void ResizeWindow()
     }
 }
 
+void HandleControls()
+{
+    fading = IsKeyPressed(KEY_J) || fadeAnim > 0.f;
+    if (IsKeyPressed(KEY_K))
+        showTime = !showTime;
+    
+#if defined(PLATFORM_ANDROID) || defined(PLATFORM_WEB)
+
+    lastGesture    = currentGesture;
+    currentGesture = GetGestureDetected();
+
+    if (currentGesture != GESTURE_NONE)
+    {
+        if (currentGesture != lastGesture)
+        {
+            switch (currentGesture)
+            {
+            case GESTURE_SWIPE_DOWN:
+                fading = true || fadeAnim > 0.f;
+                break;
+            case GESTURE_SWIPE_UP:
+                showTime = !showTime;
+                break;
+            default:
+                break;
+            }   
+        }
+    }
+#endif
+}
+
 void Update()
 {
     UpdateMusicStream(ambience);
+    
     GetTimeInfo(&currentTime);
     GetElapsedSeconds(&elapsedSeconds, currentTime);
 
@@ -563,9 +601,7 @@ void Update()
     //------------------------------------------------------------------------------------
     // Controls
     //------------------------------------------------------------------------------------
-    fading = IsKeyPressed(KEY_J) || fadeAnim > 0.f;
-    if (IsKeyPressed(KEY_K))
-        showTime = !showTime;
+    HandleControls();
 
     //------------------------------------------------------------------------------------
     // Animations
