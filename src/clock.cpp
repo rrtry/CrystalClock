@@ -90,6 +90,7 @@ Texture2D orbTexture;
 Shader crystalShader;
 Shader tunnelShader;
 Shader orbShader;
+Shader fxaaShader;
 
 //------------------------------------------------------------------------------------
 // Input variables
@@ -394,6 +395,12 @@ void LoadAudio()
     PlayMusicStream(ambience);
 }
 
+void SetShaderResolution()
+{
+    Vector2 res = { (float)screenWidth, (float)screenHeight };
+    SetShaderValue(fxaaShader, GetShaderLocation(fxaaShader, "resolution"), &res, SHADER_UNIFORM_VEC2);
+}
+
 void LoadResources()
 {
     //------------------------------------------------------------------------------------
@@ -425,6 +432,12 @@ void LoadResources()
     crystalShader = LoadShader((glslDirectory + "/crystal.vs").c_str(), (glslDirectory + "/crystal.fs").c_str());
     tunnelShader  = LoadShader((glslDirectory + "/tunnel.vs").c_str(),  (glslDirectory + "/tunnel.fs").c_str());
     orbShader     = LoadShader(0, (glslDirectory + "/orb.fs").c_str());
+    fxaaShader    = LoadShader(0, "resources/shaders/fxaa.fs");
+
+    //------------------------------------------------------------------------------------
+    // Set resolution for antialiasing shader
+    //------------------------------------------------------------------------------------
+    SetShaderResolution();
 
     //------------------------------------------------------------------------------------
     // Crystal rod
@@ -507,6 +520,7 @@ void UnloadResources()
     UnloadShader(crystalShader);
     UnloadShader(orbShader);
     UnloadShader(tunnelShader);
+    UnloadShader(fxaaShader);
 
     UnloadModel(prism);
     UnloadModel(tube);
@@ -547,6 +561,7 @@ void ResizeWindow()
         clockLayer  = LoadRenderTexture(screenWidth, screenHeight);
 
         SetWindowSize(screenWidth, screenHeight);
+        SetShaderResolution();
         camera.fovy = GetVerticalFOV();
     }
 }
@@ -747,7 +762,16 @@ void Render()
         DrawTextureRec(tunnelLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
 
         rlSetBlendMode(RL_BLEND_ADDITIVE);
-        DrawTextureRec(clockLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
+        if (showClock && !fading && elapsedTime > START_FADE_TIME)
+        {
+            BeginShaderMode(fxaaShader);
+                DrawTextureRec(clockLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
+            EndShaderMode();
+        }
+        else
+        {
+            DrawTextureRec(clockLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
+        }
 
         if (showTime)
             DrawDateTime();
