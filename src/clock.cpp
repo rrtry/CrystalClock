@@ -45,8 +45,8 @@ const double CAMERA_FAR_PLANE  = 100.0;
 //------------------------------------------------------------------------------------
 // Window size
 //------------------------------------------------------------------------------------
-int screenWidth  = 1920;
-int screenHeight = 1080;
+int screenWidth  = 0;
+int screenHeight = 0;
 
 //------------------------------------------------------------------------------------
 // Camera
@@ -58,6 +58,7 @@ Camera camera;
 //------------------------------------------------------------------------------------
 Config cfg;
 const char* timeLocale;
+string resourcesPath = ".";
 
 //------------------------------------------------------------------------------------
 // Music stream
@@ -319,6 +320,24 @@ float InvLerpPrismScale(float t)
 //------------------------------------------------------------------------------------
 // Game loop / Initialization functions
 //------------------------------------------------------------------------------------
+
+void SetWindowResolution(int width, int height)
+{
+    screenWidth  = width;
+    screenHeight = height;
+}
+
+void SetResourcesPath(const char* path)
+{
+    resourcesPath = string(path);
+}
+
+void SetTimeLocale()
+{
+    setlocale(LC_ALL, "");
+    timeLocale = setlocale(LC_TIME, nullptr);
+}
+
 bool ParseConfig(int argc, char** argv)
 {
     string err = "";
@@ -337,9 +356,7 @@ bool ParseConfig(int argc, char** argv)
     //------------------------------------------------------------------------------------
     // Retrieve time locale
     //------------------------------------------------------------------------------------
-    setlocale(LC_ALL, "");
-    timeLocale = setlocale(LC_TIME, nullptr);
-    
+    SetTimeLocale();
     return true;
 }
 
@@ -353,26 +370,8 @@ float GetVerticalFOV()
     return FIXED_FOV;
 }
 
-void InitWindow()
+void InitCamera()
 {
-    SetConfigFlags(cfg.flags | FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth, screenHeight, "PS2 Clock");
-
-    //------------------------------------------------------------------------------------
-    // Retrieve display count
-    //------------------------------------------------------------------------------------
-    int display      = cfg.display;
-    int displayCount = GetMonitorCount();
-
-    //------------------------------------------------------------------------------------
-    // Attempting to move window to specified display
-    //------------------------------------------------------------------------------------
-    if (display < displayCount && display > -1)
-        SetWindowMonitor(display);
-
-    //------------------------------------------------------------------------------------
-    // Init camera
-    //------------------------------------------------------------------------------------
     camera = { 0 };
     Vector3 position = { 0.0f, 0.0f, 30.f };
     Vector3 target   = { 0.0f, 0.0f, -1.f  };
@@ -385,6 +384,26 @@ void InitWindow()
     camera.fovy = GetVerticalFOV();
     camera.projection = CAMERA_PERSPECTIVE;
     SetTargetFPS(60);
+}
+
+void InitWindow()
+{
+    SetConfigFlags(cfg.flags | FLAG_WINDOW_RESIZABLE);
+    InitWindow(screenWidth, screenHeight, "PS2 Clock");
+
+#if defined(PLATFORM_DESKTOP)
+    //------------------------------------------------------------------------------------
+    // Retrieve display count
+    //------------------------------------------------------------------------------------
+    int display      = cfg.display;
+    int displayCount = GetMonitorCount();
+
+    //------------------------------------------------------------------------------------
+    // Attempting to move window to specified display
+    //------------------------------------------------------------------------------------
+    if (display < displayCount && display > -1)
+        SetWindowMonitor(display);
+#endif
 }
 
 void LoadAudio()
@@ -403,6 +422,7 @@ void SetShaderResolution()
 
 void LoadResources()
 {
+    ChangeDirectory(resourcesPath.c_str());
     //------------------------------------------------------------------------------------
     // Load audio
     //------------------------------------------------------------------------------------
@@ -789,9 +809,14 @@ bool Initialize(int argc, char** argv)
         return false;
 
     //------------------------------------------------------------------------------------
-    // Camera/window initialization
+    // Window initialization
     //------------------------------------------------------------------------------------
     InitWindow();
+
+    //------------------------------------------------------------------------------------
+    // Camera initialization
+    //------------------------------------------------------------------------------------
+    InitCamera();
 
     //------------------------------------------------------------------------------------
     // Loading main models and textures
