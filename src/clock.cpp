@@ -7,7 +7,7 @@
 #include <iostream>
 #include <clocale>
 
-#if defined(PLATFORM_WEB)
+#if defined(PLATFORM_WEB) || defined(PLATFORM_ANDROID)
     #define GLSL_VERSION 100
 #else
     #define GLSL_VERSION 330
@@ -320,7 +320,6 @@ float InvLerpPrismScale(float t)
 //------------------------------------------------------------------------------------
 // Game loop / Initialization functions
 //------------------------------------------------------------------------------------
-
 void SetWindowResolution(int width, int height)
 {
     screenWidth  = width;
