@@ -140,6 +140,12 @@ int lastGesture    = GESTURE_NONE;
 //------------------------------------------------------------------------------------
 // Math functions
 //------------------------------------------------------------------------------------
+float Smoothstep(float edge0, float edge1, float x)
+{
+    float t = Clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    return t * t * (3.0 - 2.0 * t);
+}
+
 float GetOrbRotationAngle(float time, int i)
 {
     return time * i * ANGLE_STEP * DEG2RAD;
