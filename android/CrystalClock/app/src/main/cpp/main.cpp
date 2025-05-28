@@ -13,7 +13,6 @@ std::pair<int, int> GetDisplayResolution() {
     JNIEnv* env = nullptr;
     vm->AttachCurrentThread(&env, nullptr);
 
-    // Get the activity object and its class
     jobject activity = app->activity->clazz;
     jclass activityClass = env->GetObjectClass(activity);
 

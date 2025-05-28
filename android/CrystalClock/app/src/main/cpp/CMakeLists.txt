@@ -4,13 +4,13 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
 set(APP_LIB_NAME crystalclock)
-set(SRC_DIR D:/Projects/CrystalClock/src)
 set(CMAKE_MESSAGE_LOG_LEVEL DEBUG)
 
 project("${APP_LIB_NAME}")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/deps/raylib)
 
+get_filename_component(SRC_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../../../../src" ABSOLUTE)
 file(GLOB_RECURSE ANDROID_PROJ_SOURCES "${CMAKE_SOURCE_DIR}/*.cpp" "${CMAKE_SOURCE_DIR}/*.h")
 list(FILTER ANDROID_PROJ_SOURCES EXCLUDE REGEX "${CMAKE_SOURCE_DIR}/deps/.*")
 
