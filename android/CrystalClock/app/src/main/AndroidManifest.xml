@@ -17,6 +17,11 @@
 
         <activity
             android:name=".ClockActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="locked"
+            android:resizeableActivity="false"
+            android:clearTaskOnLaunch="true"
+            android:launchMode="singleTask"
             android:exported="true">
 
             <intent-filter>

@@ -37,7 +37,9 @@ int main(int argc, char** argv)
     SetTimeLocale();
     InitCamera();
 
-    SetResourcesPath(GetAndroidApp()->activity->internalDataPath);
+    struct android_app* app = GetAndroidApp();
+
+    SetResourcesPath(app->activity->internalDataPath);
     LoadResources();
     SetRenderOptions();
 
