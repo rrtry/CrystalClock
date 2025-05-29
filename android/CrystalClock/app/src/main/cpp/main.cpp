@@ -5,15 +5,37 @@
 
 #include <utility>
 
-std::pair<int, int> GetDisplayResolution() {
+const int TEXT_SIZE_DIP = 15;
 
-    struct android_app *app = GetAndroidApp();
+int GetTextSize(int dip)
+{
+    struct android_app* app = GetAndroidApp();
 
     JavaVM* vm  = app->activity->vm;
     JNIEnv* env = nullptr;
     vm->AttachCurrentThread(&env, nullptr);
 
-    jobject activity = app->activity->clazz;
+    jobject activity     = app->activity->clazz;
+    jclass activityClass = env->GetObjectClass(activity);
+
+    jmethodID getTextSizeMethod = env->GetMethodID(activityClass, "getTextSize",  "(I)I");
+    jint size = env->CallIntMethod(activity, getTextSizeMethod, dip);
+
+    env->DeleteLocalRef(activityClass);
+    vm->DetachCurrentThread();
+
+    return size;
+}
+
+std::pair<int, int> GetDisplayResolution()
+{
+    struct android_app* app = GetAndroidApp();
+
+    JavaVM* vm  = app->activity->vm;
+    JNIEnv* env = nullptr;
+    vm->AttachCurrentThread(&env, nullptr);
+
+    jobject activity     = app->activity->clazz;
     jclass activityClass = env->GetObjectClass(activity);
 
     jmethodID getDisplayWidthMethod  = env->GetMethodID(activityClass, "getDisplayWidth",  "()I");
@@ -31,15 +53,16 @@ std::pair<int, int> GetDisplayResolution() {
 int main(int argc, char** argv)
 {
     std::pair<int, int> res = GetDisplayResolution();
+    int textSizePx = GetTextSize(TEXT_SIZE_DIP);
+
+    SetTextSize(textSizePx);
     SetWindowResolution(res.first, res.second);
 
     InitWindow();
     SetTimeLocale();
     InitCamera();
 
-    struct android_app* app = GetAndroidApp();
-
-    SetResourcesPath(app->activity->internalDataPath);
+    SetResourcesPath(GetAndroidApp()->activity->internalDataPath);
     LoadResources();
     SetRenderOptions();
 

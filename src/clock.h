@@ -17,5 +17,6 @@ void SetRenderOptions();
 void SetWindowResolution(int width, int height);
 void SetResourcesPath(const char* path);
 void SetTimeLocale();
+void SetTextSize(int px);
 
 #endif

@@ -58,6 +58,7 @@ Camera camera;
 //------------------------------------------------------------------------------------
 Config cfg;
 const char* timeLocale;
+int textSize = 30;
 string resourcesPath = ".";
 
 //------------------------------------------------------------------------------------
@@ -279,9 +280,9 @@ void DrawDateTime()
     string dateStr = FormatDate(currentTime, timeLocale);
     string timeStr = FormatTime(currentTime, timeLocale);
 
-    int timeSize = MeasureText(timeStr.c_str(), 30);
-    DrawText(dateStr.c_str(), 10, 10, 30, WHITE);
-    DrawText(timeStr.c_str(), screenWidth - timeSize - 10, 10, 30, WHITE);
+    int timeSize = MeasureText(timeStr.c_str(), textSize);
+    DrawText(dateStr.c_str(), 10, 10, textSize, WHITE);
+    DrawText(timeStr.c_str(), screenWidth - timeSize - 10, 10, textSize, WHITE);
 }
 
 //------------------------------------------------------------------------------------
@@ -326,6 +327,11 @@ float InvLerpPrismScale(float t)
 //------------------------------------------------------------------------------------
 // Game loop / Initialization functions
 //------------------------------------------------------------------------------------
+void SetTextSize(int px)
+{
+    textSize = px;
+}
+
 void SetWindowResolution(int width, int height)
 {
     screenWidth  = width;
