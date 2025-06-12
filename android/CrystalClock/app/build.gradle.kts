@@ -16,7 +16,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                val glVersion = "ES32"
+                val glVersion = "ES20"
                 arguments += "-DGL_VERSION=$glVersion"
                 cppFlags += "-std=c++11"
             }
@@ -30,6 +30,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
