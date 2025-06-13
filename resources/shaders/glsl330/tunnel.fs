@@ -31,7 +31,7 @@ const vec3 secondaryColor = vec3(0.18, 0.10, 0.32);
 
 vec3 SampleNoise()
 {
-	vec2 texCoord = fragTexCoord + vec2(time * 0.004, 0.0);
+	vec2 texCoord = fragTexCoord + vec2(time, 0.0);
 	float noise   = texture(texture0, texCoord).r;
 	float t 	  = smoothstep(0.0, 1.0, noise);
 	return mix(mainColor * 1.25, secondaryColor, t);

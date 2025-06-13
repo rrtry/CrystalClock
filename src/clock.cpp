@@ -713,7 +713,8 @@ void Render()
     //------------------------------------------------------------------------------------
     if (showClock || fading)
     {
-        SetShaderValue(tube.materials[0].shader, GetShaderLocation(tube.materials[0].shader, "time"), &elapsedTime, SHADER_UNIFORM_FLOAT);
+        float wrappedTime = fmod(elapsedTime * 0.004f, 1.0f);
+        SetShaderValue(tube.materials[0].shader, GetShaderLocation(tube.materials[0].shader, "time"), &wrappedTime, SHADER_UNIFORM_FLOAT);
 
         SetShaderValueMatrix(tube.materials[0].shader, GetShaderLocation(tube.materials[0].shader, "model"),   TM);
         SetShaderValueMatrix(tube.materials[0].shader, GetShaderLocation(tube.materials[0].shader, "mNormal"), TN);
