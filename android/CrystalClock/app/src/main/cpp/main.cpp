@@ -62,7 +62,6 @@ int main(int argc, char** argv)
     SetTimeLocale();
     InitCamera();
 
-    SetResourcesPath(GetAndroidApp()->activity->internalDataPath);
     LoadResources();
     SetRenderOptions();
 

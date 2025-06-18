@@ -59,7 +59,6 @@ Camera camera;
 Config cfg;
 const char* timeLocale;
 int textSize = 30;
-string resourcesPath = ".";
 
 //------------------------------------------------------------------------------------
 // Music stream
@@ -338,11 +337,6 @@ void SetWindowResolution(int width, int height)
     screenHeight = height;
 }
 
-void SetResourcesPath(const char* path)
-{
-    resourcesPath = string(path);
-}
-
 void SetTimeLocale()
 {
     setlocale(LC_ALL, "");
@@ -433,7 +427,6 @@ void SetShaderResolution()
 
 void LoadResources()
 {
-    ChangeDirectory(resourcesPath.c_str());
     //------------------------------------------------------------------------------------
     // Load audio
     //------------------------------------------------------------------------------------
@@ -840,11 +833,6 @@ bool Initialize(int argc, char** argv)
     //------------------------------------------------------------------------------------
     SetRenderOptions();
     return true;
-}
-
-void DestroyWindow()
-{
-    CloseWindow();
 }
 
 void Uninitialize()
