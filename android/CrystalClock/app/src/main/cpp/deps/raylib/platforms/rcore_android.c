@@ -52,6 +52,7 @@
 #include <jni.h>                        // Required for: JNIEnv and JavaVM [Used in OpenURL()]
 
 #include <EGL/egl.h>                    // Native platform windowing system interface
+#include "../../../egl_helper.h"        // PATCH
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -264,6 +265,10 @@ static GamepadButton AndroidTranslateGamepadButton(int button);                 
 //----------------------------------------------------------------------------------
 // Module Functions Definition: Application
 //----------------------------------------------------------------------------------
+/* PATCH */
+extern ANativeWindow* wallpaperWindow;
+extern AAssetManager* aAssetManager;
+extern const char* filesDirPath;
 
 // To allow easier porting to android, we allow the user to define a
 // main function which we call from android_main, defined by ourselves
@@ -643,6 +648,9 @@ const char *GetKeyName(int key)
 // Register all input events
 void PollInputEvents(void)
 {
+    // PATCH
+    if (wallpaperWindow != NULL)
+        return;
 #if defined(SUPPORT_GESTURES_SYSTEM)
     // NOTE: Gestures update must be called every frame to reset gestures correctly
     // because ProcessGestureEvent() is just called on an event, not every frame
@@ -717,23 +725,27 @@ int InitPlatform(void)
     CORE.Window.currentFbo.height = CORE.Window.screen.height;
 
     // Set desired windows flags before initializing anything
-    ANativeActivity_setWindowFlags(platform.app->activity, AWINDOW_FLAG_FULLSCREEN, 0);  //AWINDOW_FLAG_SCALED, AWINDOW_FLAG_DITHER
-
-    int orientation = AConfiguration_getOrientation(platform.app->config);
-
-    if (orientation == ACONFIGURATION_ORIENTATION_PORT) TRACELOG(LOG_INFO, "ANDROID: Window orientation set as portrait");
-    else if (orientation == ACONFIGURATION_ORIENTATION_LAND) TRACELOG(LOG_INFO, "ANDROID: Window orientation set as landscape");
-
-    // TODO: Automatic orientation doesn't seem to work
-    if (CORE.Window.screen.width <= CORE.Window.screen.height)
+    // PATCH
+    if (wallpaperWindow == NULL)
     {
-        AConfiguration_setOrientation(platform.app->config, ACONFIGURATION_ORIENTATION_PORT);
-        TRACELOG(LOG_WARNING, "ANDROID: Window orientation changed to portrait");
-    }
-    else
-    {
-        AConfiguration_setOrientation(platform.app->config, ACONFIGURATION_ORIENTATION_LAND);
-        TRACELOG(LOG_WARNING, "ANDROID: Window orientation changed to landscape");
+        ANativeActivity_setWindowFlags(platform.app->activity, AWINDOW_FLAG_FULLSCREEN, 0);  //AWINDOW_FLAG_SCALED, AWINDOW_FLAG_DITHER
+
+        int orientation = AConfiguration_getOrientation(platform.app->config);
+
+        if (orientation == ACONFIGURATION_ORIENTATION_PORT) TRACELOG(LOG_INFO, "ANDROID: Window orientation set as portrait");
+        else if (orientation == ACONFIGURATION_ORIENTATION_LAND) TRACELOG(LOG_INFO, "ANDROID: Window orientation set as landscape");
+
+        // TODO: Automatic orientation doesn't seem to work
+        if (CORE.Window.screen.width <= CORE.Window.screen.height)
+        {
+            AConfiguration_setOrientation(platform.app->config, ACONFIGURATION_ORIENTATION_PORT);
+            TRACELOG(LOG_WARNING, "ANDROID: Window orientation changed to portrait");
+        }
+        else
+        {
+            AConfiguration_setOrientation(platform.app->config, ACONFIGURATION_ORIENTATION_LAND);
+            TRACELOG(LOG_WARNING, "ANDROID: Window orientation changed to landscape");
+        }
     }
 
     //AConfiguration_getDensity(platform.app->config);
@@ -747,45 +759,51 @@ int InitPlatform(void)
     CORE.Window.flags |= FLAG_WINDOW_MAXIMIZED;     // true
     CORE.Window.flags &= ~FLAG_WINDOW_UNFOCUSED;    // false
     //----------------------------------------------------------------------------
-
-    // Initialize App command system
-    // NOTE: On APP_CMD_INIT_WINDOW -> InitGraphicsDevice(), InitTimer(), LoadFontDefault()...
-    //----------------------------------------------------------------------------
-    platform.app->onAppCmd = AndroidCommandCallback;
-    //----------------------------------------------------------------------------
-
-    // Initialize input events system
-    //----------------------------------------------------------------------------
-    platform.app->onInputEvent = AndroidInputCallback;
-    //----------------------------------------------------------------------------
-
-    // Initialize storage system
-    //----------------------------------------------------------------------------
-    InitAssetManager(platform.app->activity->assetManager, platform.app->activity->internalDataPath);   // Initialize assets manager
-
-    CORE.Storage.basePath = platform.app->activity->internalDataPath;   // Define base path for storage
-    //----------------------------------------------------------------------------
-
-    TRACELOG(LOG_INFO, "PLATFORM: ANDROID: Initialized successfully");
-
-    // Android ALooper_pollOnce() variables
-    int pollResult = 0;
-    int pollEvents = 0;
-
-    // Wait for window to be initialized (display and context)
-    while (!CORE.Window.ready)
+    // PATCH
+    if (wallpaperWindow == NULL)
     {
-        // Process events until we reach TIMEOUT, which indicates no more events queued.
-        while ((pollResult = ALooper_pollOnce(0, NULL, &pollEvents, (void**)&platform.source)) > ALOOPER_POLL_TIMEOUT)
-        {
-            // Process this event
-            if (platform.source != NULL) platform.source->process(platform.app, platform.source);
+        // Initialize App command system
+        // NOTE: On APP_CMD_INIT_WINDOW -> InitGraphicsDevice(), InitTimer(), LoadFontDefault()...
+        //----------------------------------------------------------------------------
+        platform.app->onAppCmd = AndroidCommandCallback;
+        //----------------------------------------------------------------------------
 
-            // NOTE: It's highly likely destroyRequested will never be non-zero at the start of the activity lifecycle.
-            //if (platform.app->destroyRequested != 0) CORE.Window.shouldClose = true;
+        // Initialize input events system
+        //----------------------------------------------------------------------------
+        platform.app->onInputEvent = AndroidInputCallback;
+        //----------------------------------------------------------------------------
+
+        // Initialize storage system
+        //----------------------------------------------------------------------------
+        InitAssetManager(platform.app->activity->assetManager, platform.app->activity->internalDataPath);   // Initialize assets manager
+        CORE.Storage.basePath = platform.app->activity->internalDataPath;   // Define base path for storage
+        //----------------------------------------------------------------------------
+
+        TRACELOG(LOG_INFO, "PLATFORM: ANDROID: Initialized successfully");
+
+        // Android ALooper_pollOnce() variables
+        int pollResult = 0;
+        int pollEvents = 0;
+
+        // Wait for window to be initialized (display and context)
+        while (!CORE.Window.ready)
+        {
+            // Process events until we reach TIMEOUT, which indicates no more events queued.
+            while ((pollResult = ALooper_pollOnce(0, NULL, &pollEvents, (void**)&platform.source)) > ALOOPER_POLL_TIMEOUT)
+            {
+                // Process this event
+                if (platform.source != NULL) platform.source->process(platform.app, platform.source);
+
+                // NOTE: It's highly likely destroyRequested will never be non-zero at the start of the activity lifecycle.
+                //if (platform.app->destroyRequested != 0) CORE.Window.shouldClose = true;
+            }
         }
     }
-
+    else
+    {
+        InitAssetManager(aAssetManager, filesDirPath);
+        CORE.Storage.basePath = filesDirPath;
+    }
     return 0;
 }
 
@@ -814,7 +832,16 @@ void ClosePlatform(void)
     }
 
     // NOTE: Reset global state in case the activity is being relaunched.
-    if (platform.app->destroyRequested != 0) {
+    // PATCH
+    if (wallpaperWindow == NULL)
+    {
+        if (platform.app->destroyRequested != 0) {
+            CORE = (CoreData){0};
+            platform = (PlatformData){0};
+        }
+    }
+    else
+    {
         CORE = (CoreData){0};
         platform = (PlatformData){0};
     }
@@ -904,11 +931,12 @@ static int InitGraphicsDevice(void)
     //  -> CORE.Window.render.width/CORE.Window.render.height
     //  -> CORE.Window.screenScale
     SetupFramebuffer(CORE.Window.display.width, CORE.Window.display.height);
-
-    ANativeWindow_setBuffersGeometry(platform.app->window, CORE.Window.render.width, CORE.Window.render.height, displayFormat);
+    // PATCH
+    ANativeWindow_setBuffersGeometry(wallpaperWindow == NULL ? platform.app->window : wallpaperWindow, CORE.Window.render.width, CORE.Window.render.height, displayFormat);
     //ANativeWindow_setBuffersGeometry(platform.app->window, 0, 0, displayFormat);       // Force use of native display size
 
-    platform.surface = eglCreateWindowSurface(platform.device, platform.config, platform.app->window, NULL);
+    //PATCH
+    platform.surface = eglCreateWindowSurface(platform.device, platform.config, wallpaperWindow == NULL ? platform.app->window : wallpaperWindow, NULL);
 
     // There must be at least one frame displayed before the buffers are swapped
     //eglSwapInterval(platform.device, 1);
@@ -941,6 +969,74 @@ static int InitGraphicsDevice(void)
     if ((CORE.Window.flags & FLAG_WINDOW_MINIMIZED) > 0) MinimizeWindow();
 
     return 0;
+}
+
+// PATCH
+void LoadEGLContext()
+{
+    CORE.Window.display.width = ANativeWindow_getWidth(wallpaperWindow);
+    CORE.Window.display.height = ANativeWindow_getHeight(wallpaperWindow);
+
+    // Initialize graphics device (display device and OpenGL context)
+    InitGraphicsDevice();
+
+    // Initialize OpenGL context (states and resources)
+    // NOTE: CORE.Window.currentFbo.width and CORE.Window.currentFbo.height not used, just stored as globals in rlgl
+    rlglInit(CORE.Window.currentFbo.width, CORE.Window.currentFbo.height);
+    isGpuReady = true;
+
+    // Setup default viewport
+    // NOTE: It updated CORE.Window.render.width and CORE.Window.render.height
+    SetupViewport(CORE.Window.currentFbo.width, CORE.Window.currentFbo.height);
+
+    // Initialize hi-res timer
+    InitTimer();
+
+#if defined(SUPPORT_MODULE_RTEXT) && defined(SUPPORT_DEFAULT_FONT)
+    // Load default font
+    // WARNING: External function: Module required: rtext
+    LoadFontDefault();
+#if defined(SUPPORT_MODULE_RSHAPES)
+    // Set font white rectangle for shapes drawing, so shapes and text can be batched together
+    // WARNING: rshapes module is required, if not available, default internal white rectangle is used
+    Rectangle rec = GetFontDefault().recs[95];
+    if (CORE.Window.flags & FLAG_MSAA_4X_HINT)
+    {
+        // NOTE: We try to maxime rec padding to avoid pixel bleeding on MSAA filtering
+        SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 2, rec.y + 2, 1, 1 });
+    }
+    else
+    {
+        // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding
+        SetShapesTexture(GetFontDefault().texture, (Rectangle){ rec.x + 1, rec.y + 1, rec.width - 2, rec.height - 2 });
+    }
+#endif
+#else
+    #if defined(SUPPORT_MODULE_RSHAPES)
+                    // Set default texture and rectangle to be used for shapes drawing
+                    // NOTE: rlgl default texture is a 1x1 pixel UNCOMPRESSED_R8G8B8A8
+                    Texture2D texture = { rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
+                    SetShapesTexture(texture, (Rectangle){ 0.0f, 0.0f, 1.0f, 1.0f });    // WARNING: Module required: rshapes
+                    #endif
+#endif
+
+    // Initialize random seed
+    SetRandomSeed((unsigned int)time(NULL));
+
+    // TODO: GPU assets reload in case of lost focus (lost context)
+    // NOTE: This problem has been solved just unbinding and rebinding context from display
+    /*
+    if (assetsReloadRequired)
+    {
+        for (int i = 0; i < assetCount; i++)
+        {
+            // TODO: Unload old asset if required
+
+            // Load texture again to pointed texture
+            (*textureAsset + i) = LoadTexture(assetPath[i]);
+        }
+    }
+    */
 }
 
 // ANDROID: Process activity lifecycle commands

@@ -1,9 +1,17 @@
 #include "raylib.h"
-#include "jni.h"
-#include "android_native.h"
 #include "../../../../../../src/clock.h"
 
+#include "jni.h"
+#include "egl_helper.h"
+
+#include "android/native_window.h"
+#include "android/asset_manager.h"
+#include "android/native_window_jni.h"
+#include "android/asset_manager_jni.h"
+#include "android_native.h"
+
 #include <utility>
+#include <string>
 
 const int TEXT_SIZE_DIP = 15;
 
@@ -68,4 +76,44 @@ int main(int argc, char** argv)
 
     Uninitialize();
     return 0;
+}
+
+ANativeWindow* wallpaperWindow = NULL;
+AAssetManager* aAssetManager   = NULL;
+const char* filesDirPath       = NULL;
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_rrtry_crystalclock_RLWallpaperService_nativeInit(JNIEnv *env, jobject thiz,
+                                                          jobject surface, jobject asset_manager,
+                                                          jstring internal_data_path) {
+
+    wallpaperWindow = ANativeWindow_fromSurface(env, surface);
+    aAssetManager   = AAssetManager_fromJava(env, asset_manager);
+
+    const char* chars = env->GetStringUTFChars(internal_data_path, 0);
+    filesDirPath      = strdup(chars);
+
+    env->ReleaseStringUTFChars(internal_data_path, chars);
+
+    SetWindowResolution(ANativeWindow_getWidth(wallpaperWindow), ANativeWindow_getHeight(wallpaperWindow));
+    SetFadeIn(false);
+    SetShowTime(false);
+
+    LoadEGLContext();
+    Initialize();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_rrtry_crystalclock_RLWallpaperService_nativeRender(JNIEnv *env, jobject thiz) {
+    Loop();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_rrtry_crystalclock_RLWallpaperService_nativeShutdown(JNIEnv *env, jobject thiz) {
+    Uninitialize();
+    ANativeWindow_release(wallpaperWindow);
+    wallpaperWindow = NULL;
 }
