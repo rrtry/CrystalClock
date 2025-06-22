@@ -7,10 +7,15 @@
 
 using namespace std;
 
-static map<Argument, int> flagsMap = {
+static map<Argument, int> windowFlagsMap = {
 	{ BORDERLESS,  FLAG_BORDERLESS_WINDOWED_MODE },
 	{ FULLSCREEN,  FLAG_FULLSCREEN_MODE			 },
 	{ UNDECORATED, FLAG_WINDOW_UNDECORATED		 }
+};
+
+static map<Argument, int> prefFlagsMap = {
+	{ NO_SOUND,   FLAG_NO_SOUND   },
+	{ NO_FADE_IN, FLAG_NO_FADE_IN }
 };
 
 static map<string, CMDParameter> argsMap = {
@@ -26,7 +31,10 @@ static map<string, CMDParameter> argsMap = {
 
 	{ CMD_BORDERLESS,  { BORDERLESS,  false }},
 	{ CMD_FULLSCREEN,  { FULLSCREEN,  false }},
-	{ CMD_UNDECORATED, { UNDECORATED, false }}
+	{ CMD_UNDECORATED, { UNDECORATED, false }},
+
+	{ CMD_NO_FADE_IN, { NO_FADE_IN, false }},
+	{ CMD_NO_SOUND,   { NO_SOUND,   false }}
 };
 
 static inline void ltrim(string& s) {
@@ -88,13 +96,22 @@ static bool ParseArgValue(Config& config,
 		}
 		break;
 
+		case NO_SOUND:
+		case NO_FADE_IN:
+		{
+			parsed = ParseInt(argValue, ivalue) && ivalue == 1;
+			if (parsed)
+				config.preferenceFlags |= prefFlagsMap[cmd.argument];
+		}
+		break;
+
 		case FULLSCREEN:
 		case BORDERLESS:
 		case UNDECORATED:
 		{
 			parsed = ParseInt(argValue, ivalue) && ivalue == 1;
 			if (parsed)
-				config.flags |= flagsMap[cmd.argument];
+				config.flags |= windowFlagsMap[cmd.argument];
 		}
 		break;
 	}
@@ -124,10 +141,16 @@ bool ParseCMD(Config& config, int argc, char** argv, string& err)
 			}
 
 			if (!search->second.hasValue)
-				config.flags |= flagsMap[search->second.argument];
+			{
+				if (prefFlagsMap.find(search->second.argument) != prefFlagsMap.end())
+					config.preferenceFlags |= prefFlagsMap[search->second.argument];
+				else
+					config.flags |= windowFlagsMap[search->second.argument];
+			}
 			else
+			{
 				lastCmd = search->first;
-
+			}
 			continue;
 		}
 

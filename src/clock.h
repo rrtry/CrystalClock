@@ -2,19 +2,16 @@
 #define CLOCK_H
 
 bool Initialize(int argc, char** argv);
+bool Initialize();
+
 void Uninitialize();
-
-void InitWindow();
-void InitCamera();
-
-void LoadResources();
-void UnloadResources();
-
 void Loop();
 
-void SetRenderOptions();
 void SetWindowResolution(int width, int height);
-void SetTimeLocale();
 void SetTextSize(int px);
+
+void SetFadeIn(bool fade);
+void SetPlaySound(bool play);
+void SetShowTime(bool show);
 
 #endif

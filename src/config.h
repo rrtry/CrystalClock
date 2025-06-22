@@ -3,6 +3,9 @@
 
 #include <string>
 
+constexpr auto FLAG_NO_SOUND   = 1 << 0;
+constexpr auto FLAG_NO_FADE_IN = 1 << 1;
+
 constexpr auto CMD_WIDTH  = "-width";
 constexpr auto CMD_HEIGHT = "-height";
 
@@ -15,6 +18,8 @@ constexpr auto CMD_DISPLAY_SHORT = "-d";
 constexpr auto CMD_BORDERLESS  = "-borderless";
 constexpr auto CMD_FULLSCREEN  = "-fullscreen";
 constexpr auto CMD_UNDECORATED = "-undecorated";
+constexpr auto CMD_NO_FADE_IN  = "-nofadein";
+constexpr auto CMD_NO_SOUND	   = "-nosound";
 
 struct Config
 {
@@ -22,6 +27,7 @@ struct Config
 	int screenHeight;
 	int display;
 	int flags;
+	int preferenceFlags;
 };
 
 enum Argument
@@ -33,7 +39,9 @@ enum Argument
 	FULLSCREEN,
 	UNDECORATED,
 
-	DISPLAY
+	DISPLAY,
+	NO_SOUND,
+	NO_FADE_IN
 };
 
 struct CMDParameter

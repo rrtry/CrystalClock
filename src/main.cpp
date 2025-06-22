@@ -6,12 +6,12 @@
 //------------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-    if (!Initialize(argc, argv)) // Includes InitWindow call
+    if (!Initialize(argc, argv))
         return 1;
     
     while (!WindowShouldClose())
         Loop();
     
-    Uninitialize(); // Includes CloseWindow call
+    Uninitialize();
     return 0;
 }

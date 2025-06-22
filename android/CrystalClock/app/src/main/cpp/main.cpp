@@ -57,19 +57,15 @@ int main(int argc, char** argv)
 
     SetTextSize(textSizePx);
     SetWindowResolution(res.first, res.second);
+    SetFadeIn(false);
+    SetShowTime(false);
 
-    InitWindow();
-    SetTimeLocale();
-    InitCamera();
-
-    LoadResources();
-    SetRenderOptions();
+    if (!Initialize())
+        return 1;
 
     while (!WindowShouldClose())
         Loop();
 
-    UnloadResources();
-    CloseWindow();
-
+    Uninitialize();
     return 0;
 }

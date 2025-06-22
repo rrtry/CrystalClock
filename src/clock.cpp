@@ -56,7 +56,7 @@ Camera camera;
 //------------------------------------------------------------------------------------
 // Config / Locale
 //------------------------------------------------------------------------------------
-Config cfg;
+Config cfg = { 0 };
 const char* timeLocale;
 int textSize = 30;
 
@@ -126,10 +126,12 @@ bool newHour;
 bool fading;
 
 bool showClock = true;
+bool fadeIn    = false;
 bool showTime  = true;
+bool playSound = true;
 
-Color clockLayerTint = BLACK;
-Color orbLayerTint   = BLACK;
+Color clockLayerTint = WHITE;
+Color orbLayerTint   = WHITE;
 
 //------------------------------------------------------------------------------------
 // Gesture contols
@@ -140,12 +142,6 @@ int lastGesture    = GESTURE_NONE;
 //------------------------------------------------------------------------------------
 // Math functions
 //------------------------------------------------------------------------------------
-float Smoothstep(float edge0, float edge1, float x)
-{
-    float t = Clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-    return t * t * (3.0 - 2.0 * t);
-}
-
 float GetOrbRotationAngle(float time, int i)
 {
     return time * i * ANGLE_STEP * DEG2RAD;
@@ -326,6 +322,23 @@ float InvLerpPrismScale(float t)
 //------------------------------------------------------------------------------------
 // Game loop / Initialization functions
 //------------------------------------------------------------------------------------
+void SetShowTime(bool show)
+{
+    showTime = show;
+}
+
+void SetPlaySound(bool play)
+{
+    playSound = play;
+}
+
+void SetFadeIn(bool fade)
+{
+    clockLayerTint = fade ? BLACK : WHITE;
+    orbLayerTint   = fade ? BLACK : WHITE;
+    fadeIn = fade;
+}
+
 void SetTextSize(int px)
 {
     textSize = px;
@@ -357,11 +370,10 @@ bool ParseConfig(int argc, char** argv)
 
     screenWidth  = cfg.screenWidth;
     screenHeight = cfg.screenHeight;
+    
+    playSound = (cfg.preferenceFlags & FLAG_NO_SOUND)   == 0;
+    fadeIn    = (cfg.preferenceFlags & FLAG_NO_FADE_IN) == 0;
 
-    //------------------------------------------------------------------------------------
-    // Retrieve time locale
-    //------------------------------------------------------------------------------------
-    SetTimeLocale();
     return true;
 }
 
@@ -413,10 +425,13 @@ void InitWindow()
 
 void LoadAudio()
 {
-    InitAudioDevice();
-    ambience = LoadMusicStream("resources/sound/waves.ogg");
-    ambience.looping = true;
-    PlayMusicStream(ambience);
+    if (playSound)
+    {
+        InitAudioDevice();
+        ambience = LoadMusicStream("resources/sound/waves.ogg");
+        ambience.looping = true;
+        PlayMusicStream(ambience);
+    }
 }
 
 void SetShaderResolution()
@@ -533,9 +548,12 @@ void LoadResources()
 
 void UnloadResources()
 {
-    StopMusicStream(ambience);
-    UnloadMusicStream(ambience);
-    CloseAudioDevice();
+    if (playSound)
+    {
+        StopMusicStream(ambience);
+        UnloadMusicStream(ambience);
+        CloseAudioDevice();
+    }
 
     UnloadTexture(orbTexture);
     UnloadTexture(noiseTexture);
@@ -623,7 +641,8 @@ void HandleControls()
 
 void Update()
 {
-    UpdateMusicStream(ambience);
+    if (playSound)
+        UpdateMusicStream(ambience);
     
     GetTimeInfo(&currentTime);
     GetElapsedSeconds(&elapsedSeconds, currentTime);
@@ -645,7 +664,7 @@ void Update()
     //------------------------------------------------------------------------------------
     // Animations
     //------------------------------------------------------------------------------------
-    if (elapsedTime < START_FADE_TIME)
+    if (elapsedTime < START_FADE_TIME && fadeIn)
     {
         Vector3 tint = Vector3Lerp(
                 Vector3({ 0, 0, 0 }),
@@ -787,7 +806,7 @@ void Render()
         DrawTextureRec(tunnelLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
 
         rlSetBlendMode(RL_BLEND_ADDITIVE);
-        if (showClock && !fading && elapsedTime > START_FADE_TIME)
+        if (showClock && !fading && (elapsedTime > START_FADE_TIME || !fadeIn))
         {
             BeginShaderMode(fxaaShader);
                 DrawTextureRec(clockLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
@@ -805,13 +824,16 @@ void Render()
     EndDrawing();
 }
 
-bool Initialize(int argc, char** argv)
+bool Initialize()
 {
-    //------------------------------------------------------------------------------------
-    // Parse command line parameters
-    //------------------------------------------------------------------------------------
-    if (!ParseConfig(argc, argv))
+    if (screenWidth <= 0 || screenHeight <= 0)
+    {
         return false;
+    }
+    //------------------------------------------------------------------------------------
+    // Set time locale
+    //------------------------------------------------------------------------------------
+    SetTimeLocale();
 
     //------------------------------------------------------------------------------------
     // Window initialization
@@ -833,6 +855,17 @@ bool Initialize(int argc, char** argv)
     //------------------------------------------------------------------------------------
     SetRenderOptions();
     return true;
+}
+
+bool Initialize(int argc, char** argv)
+{
+    //------------------------------------------------------------------------------------
+    // Parse command line parameters
+    //------------------------------------------------------------------------------------
+    if (!ParseConfig(argc, argv))
+        return false;
+    
+    return Initialize();
 }
 
 void Uninitialize()
