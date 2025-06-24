@@ -25,6 +25,19 @@
       "filters": [
         {
           "filterType": "ABI",
+          "value": "x86_64"
+        }
+      ],
+      "attributes": [],
+      "versionCode": 3001,
+      "versionName": "1.0",
+      "outputFile": "app-x86_64-release.apk"
+    },
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [
+        {
+          "filterType": "ABI",
           "value": "arm64-v8a"
         }
       ],
@@ -45,19 +58,6 @@
       "versionCode": 2001,
       "versionName": "1.0",
       "outputFile": "app-x86-release.apk"
-    },
-    {
-      "type": "ONE_OF_MANY",
-      "filters": [
-        {
-          "filterType": "ABI",
-          "value": "x86_64"
-        }
-      ],
-      "attributes": [],
-      "versionCode": 3001,
-      "versionName": "1.0",
-      "outputFile": "app-x86_64-release.apk"
     }
   ],
   "elementType": "File",

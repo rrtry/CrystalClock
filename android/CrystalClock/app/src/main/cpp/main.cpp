@@ -97,6 +97,7 @@ Java_com_rrtry_crystalclock_RLWallpaperService_nativeInit(JNIEnv *env, jobject t
     env->ReleaseStringUTFChars(internal_data_path, chars);
 
     SetWindowResolution(ANativeWindow_getWidth(wallpaperWindow), ANativeWindow_getHeight(wallpaperWindow));
+    SetPlaySound(false);
     SetFadeIn(false);
     SetShowTime(false);
 
