@@ -24,20 +24,20 @@ const Vector3 PRISM_COLORS[] = {
 const int ORBS         = 7;
 const int TRAIL_LENGTH = 25;
 
-const float MIN_SPHERE_RADIUS = 2.5f;
-const float MAX_SPHERE_RADIUS = 4.5f;
+const float MAX_SPHERE_RADIUS = 6.0f;
+const float MIN_SPHERE_RADIUS = MAX_SPHERE_RADIUS / 2;
 
 const float SPHERE_SCALE_TIME = 1.5f;
 const float PRISM_SCALE_TIME  = 1.5f;
 const float FADE_TIME         = 2.0f;
 const float START_FADE_TIME   = 4.0f;
 
-const float FIXED_FOV = 60.f;
+const float FIXED_FOV = 65.f;
 
 const float X_SPEED    = PI / 2;
 const float Z_SPEED    = -PI;
 const float ANGLE_STEP = 360.f / 60.f;
-const float ANGLES[]   = { PI / 2, PI, 0.f };
+const float ANGLES[]   = { PI / 2, PI + PI / 6, 0.f };
 
 const double CAMERA_NEAR_PLANE = 0.1;
 const double CAMERA_FAR_PLANE  = 100.0;
@@ -105,7 +105,7 @@ Matrix TN = MatrixInvert(MatrixTranspose(TM));
 Time currentTime;
 ElapsedSeconds elapsedSeconds;
 
-Vector3 clockPosition = { 0.0f, 5.0f, 0.0f };
+Vector3 clockPosition = { 0.0f, MAX_SPHERE_RADIUS + 0.5f, 0.0f };
 Vector3 prismColor;
 
 float elapsedTime;     // Time since start
