@@ -16,9 +16,9 @@
 using namespace std;
 
 const Vector3 PRISM_COLORS[] = {
-    { 0.04, 0.23, 0.46 },
-    { 0.17, 0.03, 0.45 },
-    { 0.03, 0.39, 0.45 }
+    { 0.04f, 0.23f, 0.46f },
+    { 0.17f, 0.03f, 0.45f },
+    { 0.03f, 0.39f, 0.45f }
 };
 
 const int ORBS         = 7;
@@ -481,19 +481,19 @@ void LoadResources()
     //------------------------------------------------------------------------------------
     // Crystal rod
     //------------------------------------------------------------------------------------
-    Vector3 crystalAmbient   = { 0.04, 0.23, 0.46 };
-    Vector3 crystalDiffuse   = { 0.04, 0.23, 0.46 };
-    Vector3 crystalSpecular  = { 1.0,  1.0,  1.0  };
-    float   crystalShininess = 0.4;
+    Vector3 crystalAmbient   = { 0.04f, 0.23f, 0.46f };
+    Vector3 crystalDiffuse   = { 0.04f, 0.23f, 0.46f };
+    Vector3 crystalSpecular  = { 1.0f,  1.0f,  1.0f  };
+    float   crystalShininess = 0.4f;
 
-    Vector3 orbLightAmbient   = { 0.5, 0.5, 0.5 };
-    Vector3 orbLightDiffuse   = { 0.8, 0.8, 0.8 };
-    Vector3 orbLightSpecular  = { 1.0, 1.0, 1.0 };
+    Vector3 orbLightAmbient   = { 0.5f, 0.5f, 0.5f };
+    Vector3 orbLightDiffuse   = { 0.8f, 0.8f, 0.8f };
+    Vector3 orbLightSpecular  = { 1.0f, 1.0f, 1.0f };
 
-    Vector3 dirLightAmbient  = { 0.5, 0.5,  0.5  };
-    Vector3 dirLightDiffuse  = { 0.8, 0.8,  0.8  };
-    Vector3 dirLightSpecular = { 0.5, 0.5,  0.5  };
-    Vector3 lightDirection   = { 0.0, 0.0,  -1.0 };
+    Vector3 dirLightAmbient  = { 0.5f, 0.5f,  0.5f  };
+    Vector3 dirLightDiffuse  = { 0.8f, 0.8f,  0.8f  };
+    Vector3 dirLightSpecular = { 0.5f, 0.5f,  0.5f  };
+    Vector3 lightDirection   = { 0.0f, 0.0f,  -1.0f };
 
     SetShaderValue(crystalShader, GetShaderLocation(crystalShader, "material.ambient"),   &crystalAmbient,   RL_SHADER_UNIFORM_VEC3);
     SetShaderValue(crystalShader, GetShaderLocation(crystalShader, "material.diffuse"),   &crystalDiffuse,   RL_SHADER_UNIFORM_VEC3);
@@ -506,9 +506,9 @@ void LoadResources()
     SetShaderValue(crystalShader, GetShaderLocation(crystalShader, "dirLight.specular"),  &dirLightSpecular,  RL_SHADER_UNIFORM_VEC3);
 
     // 13	1.0	0.35	0.44
-    const float ORB_LIGHT_KC = 1.0;
-    const float ORB_LIGHT_KL = 0.7;
-    const float ORB_LIGHT_KQ = 1.8;
+    const float ORB_LIGHT_KC = 1.0f;
+    const float ORB_LIGHT_KL = 0.7f;
+    const float ORB_LIGHT_KQ = 1.8f;
 
     for (int i = 0; i < ORBS; i++)
     {
