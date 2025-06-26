@@ -1,6 +1,8 @@
 # CrystalClock
 Re-creation of PS2's display clock in Raylib
-
+# Controls
+For Desktop: 'k' to show/hide time, 'j' to enable/disable 'orbs only' mode
+For Mobile: 'Swipe up' to show/hide time, 'Swipe down' to enable/disable 'orbs only' mode
 # Build
 Install and configure CMake and then run the following from the root directory of the project:
 ``` bash
@@ -31,11 +33,10 @@ crystalclock.exe -w 1920 -h 1080 -d 1
 ```
 Additional flags:
 ```
--fullscreen -borderless -undecorated
+-fullscreen -borderless -undecorated -nosound -nofadein
 ```
-# Controls
-Press j to alternate between 'clock' mode and 'orbs only' mode
 # Screenshots
 ![Clock1](/images/clock1.png "Clock preview")
 ![Clock2](/images/clock2.png "Clock preview")
 ![Clock3](/images/clock3.png "Clock preview")
+![Clock4](/images/clock4.jpg "Clock preview")

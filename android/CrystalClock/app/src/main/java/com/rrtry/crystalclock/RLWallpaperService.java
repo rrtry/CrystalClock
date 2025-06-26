@@ -106,6 +106,13 @@ public class RLWallpaperService extends WallpaperService {
             renderHandler.sendEmptyMessage(MSG_INIT);
         }
 
+        // TODO: implement
+        @Override
+        public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            super.onSurfaceChanged(holder, format, width, height);
+            if (isPreview()) return;
+        }
+
         @Override
         public void onVisibilityChanged(boolean visible) {
             super.onVisibilityChanged(visible);
