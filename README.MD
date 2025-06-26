@@ -35,6 +35,22 @@ Additional flags:
 ```
 -fullscreen -borderless -undecorated -nosound -nofadein
 ```
+Parameters can also be specified in `config.ini` file, place it into resources/
+```
+# CrystalClock configuration file
+# NOTE: Do not put comments on the same line with properties: width = 1920 # window width
+# Boolean properties can also accept integer as value: fullscreen = 1, fullscreen = true
+# Properties with invalid values will be ignored
+[window]
+width  = 1920
+height = 1080
+
+fullscreen  = 0
+undecorated = 0
+borderless  = 0
+nofadein    = 0
+nosound     = 0
+```
 # Screenshots
 ![Clock1](/images/clock1.png "Clock preview")
 ![Clock2](/images/clock2.png "Clock preview")
