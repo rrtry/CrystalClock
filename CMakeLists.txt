@@ -32,6 +32,11 @@ set(BASE_SOURCES src/config.cpp src/config.h src/clock.cpp src/clock.h src/timei
 if (${PLATFORM} STREQUAL "Desktop")
     if (DESKTOP_WALLPAPER)
       add_executable(${PROJECT_NAME} src/wallpaper/Main.cpp ${WALLPAPER_SOURCES} ${BASE_SOURCES})
+      target_compile_definitions(
+        ${PROJECT_NAME}
+          PRIVATE
+          WALLPAPER
+      )
     else()
       add_executable(${PROJECT_NAME} src/main.cpp ${BASE_SOURCES})
     endif()

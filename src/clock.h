@@ -3,6 +3,7 @@
 
 bool Initialize(int argc, char** argv);
 bool Initialize();
+bool ParseConfig(int argc, char** argv, bool prefsOnly);
 
 void Uninitialize();
 void Loop();

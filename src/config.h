@@ -50,8 +50,8 @@ struct CMDParameter
 	bool hasValue;
 };
 
-bool ParseCMD(Config& cfg, int argc, char** argv, std::string& err);
-bool ParseINI(Config& cfg, const std::string& path);
+bool ParseCMD(Config& cfg, int argc, char** argv, std::string& err, bool prefsOnly);
+bool ParseINI(Config& cfg, const std::string& path, bool prefsOnly);
 
 #endif
 

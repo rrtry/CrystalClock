@@ -47,6 +47,7 @@ const double CAMERA_FAR_PLANE  = 100.0;
 //------------------------------------------------------------------------------------
 int screenWidth  = 0;
 int screenHeight = 0;
+int windowFlags  = 0;
 
 //------------------------------------------------------------------------------------
 // Camera
@@ -322,6 +323,11 @@ float InvLerpPrismScale(float t)
 //------------------------------------------------------------------------------------
 // Game loop / Initialization functions
 //------------------------------------------------------------------------------------
+int GetTargetDisplay()
+{
+    return cfg.display;
+}
+
 void SetShowTime(bool show)
 {
     showTime = show;
@@ -356,21 +362,25 @@ void SetTimeLocale()
     timeLocale = setlocale(LC_TIME, nullptr);
 }
 
-bool ParseConfig(int argc, char** argv)
+bool ParseConfig(int argc, char** argv, bool prefsOnly)
 {
     string err = "";
-    if (!ParseCMD(cfg, argc, argv, err))
+    if (!ParseCMD(cfg, argc, argv, err, prefsOnly))
     {
-        if (!ParseINI(cfg, "resources/config.ini"))
+        if (!ParseINI(cfg, "resources/config.ini", prefsOnly))
         {
             cerr << "Could not read config" << endl;
             return false;
         }
     }
 
-    screenWidth  = cfg.screenWidth;
-    screenHeight = cfg.screenHeight;
-    
+    if (!prefsOnly)
+    {
+        screenWidth  = cfg.screenWidth;
+        screenHeight = cfg.screenHeight;
+        windowFlags  = cfg.flags;
+    }
+
     playSound = (cfg.preferenceFlags & FLAG_NO_SOUND)   == 0;
     fadeIn    = (cfg.preferenceFlags & FLAG_NO_FADE_IN) == 0;
 
@@ -405,10 +415,16 @@ void InitCamera()
 
 void InitWindow()
 {
-    SetConfigFlags(cfg.flags | FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth, screenHeight, "PS2 Clock");
+    SetConfigFlags(windowFlags | FLAG_WINDOW_RESIZABLE);
+    InitWindow(screenWidth, screenHeight, "CrystalClock");
 
-#if defined(PLATFORM_DESKTOP)
+    if (screenWidth == 0 || screenHeight == 0)
+    {
+        screenWidth  = GetScreenWidth();
+        screenHeight = GetScreenHeight(); 
+    }
+    
+#if defined(PLATFORM_DESKTOP) && !defined(WALLPAPER)
 
     if (cfg.display <= 0)
         return;
@@ -865,7 +881,7 @@ bool Initialize(int argc, char** argv)
     //------------------------------------------------------------------------------------
     // Parse command line parameters
     //------------------------------------------------------------------------------------
-    if (!ParseConfig(argc, argv))
+    if (!ParseConfig(argc, argv, false))
         return false;
     
     return Initialize();

@@ -118,10 +118,10 @@ static bool ParseArgValue(Config& config,
 	return parsed;
 }
 
-bool ParseCMD(Config& config, int argc, char** argv, string& err)
+bool ParseCMD(Config& config, int argc, char** argv, string& err, bool prefsOnly)
 {
 	config = { 0 };
-	if (argc < 5)
+	if (!prefsOnly && argc < 5)
 	{
 		err = "Not enough arguments";
 		return false;
@@ -162,10 +162,13 @@ bool ParseCMD(Config& config, int argc, char** argv, string& err)
 		}
 		lastCmd = "";
 	}
-	if (config.screenWidth <= 0 || config.screenHeight <= 0)
+	if (!prefsOnly)
 	{
-		err = "Window dimensions missing";
-		return false;
+		if (config.screenWidth <= 0 || config.screenHeight <= 0)
+		{
+			err = "Window dimensions missing";
+			return false;
+		}
 	}
 	return true;
 }
@@ -174,7 +177,7 @@ bool ParseCMD(Config& config, int argc, char** argv, string& err)
 * Simple INI-like parser, supports only simple key-value pairs, without special characters and line continuation.
 * Sections are ignored for now.
 */
-bool ParseINI(Config& cfg, const string& path)
+bool ParseINI(Config& cfg, const string& path, bool prefsOnly)
 {
 	cfg = { 0 };
     ifstream ifs(path);
@@ -230,5 +233,5 @@ bool ParseINI(Config& cfg, const string& path)
 			ParseArgValue(cfg, search->second, key, value);	
 		}
 	}
-	return cfg.screenWidth > 0 && cfg.screenHeight > 0;
+	return (prefsOnly || (cfg.screenWidth > 0 && cfg.screenHeight > 0));
 }
