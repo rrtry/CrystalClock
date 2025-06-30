@@ -20,12 +20,8 @@ int main(int argc, char** argv)
 	// Set resolution
 	SetWindowResolution(monitorInfo.monitorWidth, monitorInfo.monitorHeight);
 
-	// Game config
-	SetPlaySound(true);
-	SetFadeIn(false);
-	SetShowTime(false);
-
 	// Initialize
+	SetShowTime(false);
 	Initialize();
 
 	// Retrieve the handle for the raylib-created window.

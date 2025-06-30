@@ -32,7 +32,7 @@ const float PRISM_SCALE_TIME  = 1.5f;
 const float FADE_TIME         = 2.0f;
 const float START_FADE_TIME   = 4.0f;
 
-const float FIXED_FOV = 65.f;
+const float FIXED_FOV = 70.f;
 
 const float X_SPEED    = PI / 2;
 const float Z_SPEED    = -PI;
