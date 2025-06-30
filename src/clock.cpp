@@ -126,7 +126,7 @@ bool newHour;
 bool fading;
 
 bool showClock = true;
-bool fadeIn    = false;
+bool fadeIn    = true;
 bool showTime  = true;
 bool playSound = true;
 
@@ -409,6 +409,9 @@ void InitWindow()
     InitWindow(screenWidth, screenHeight, "PS2 Clock");
 
 #if defined(PLATFORM_DESKTOP)
+
+    if (cfg.display <= 0)
+        return;
     //------------------------------------------------------------------------------------
     // Retrieve display count
     //------------------------------------------------------------------------------------

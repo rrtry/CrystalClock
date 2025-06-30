@@ -23,14 +23,31 @@ if (NOT raylib_FOUND)
   endif()
 endif()
 
+option(DESKTOP_WALLPAPER "Build the program as desktop wallpaper" OFF)
+
+set(WALLPAPER_DIR src/wallpaper)
+set(WALLPAPER_SOURCES ${WALLPAPER_DIR}/RaylibDesktop.cpp ${WALLPAPER_DIR}/RaylibDesktop.h)
+set(BASE_SOURCES src/config.cpp src/config.h src/clock.cpp src/clock.h src/timeinfo.cpp src/timeinfo.h)
+
 if (${PLATFORM} STREQUAL "Desktop")
-    add_executable(${PROJECT_NAME} src/main.cpp src/config.cpp src/config.h src/clock.cpp src/clock.h src/timeinfo.cpp src/timeinfo.h)
+    if (DESKTOP_WALLPAPER)
+      add_executable(${PROJECT_NAME} src/wallpaper/Main.cpp ${WALLPAPER_SOURCES} ${BASE_SOURCES})
+    else()
+      add_executable(${PROJECT_NAME} src/main.cpp ${BASE_SOURCES})
+    endif()
+    if (MSVC)
+      target_compile_definitions(${PROJECT_NAME}
+          PRIVATE
+            UNICODE
+            _UNICODE
+      )
+    endif()
     target_link_libraries(${PROJECT_NAME} raylib)
 endif()
 
 if (${PLATFORM} STREQUAL "Web")
 
-    add_executable(${PROJECT_NAME} src/emscripten_main.cpp src/config.cpp src/config.h src/clock.cpp src/clock.h src/timeinfo.cpp src/timeinfo.h)
+    add_executable(${PROJECT_NAME} src/emscripten_main.cpp ${BASE_SOURCES})
     target_link_libraries(${PROJECT_NAME} raylib)
     
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
