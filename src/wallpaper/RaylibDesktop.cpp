@@ -401,6 +401,7 @@ void ConfigureDesktopPositioning(MonitorInfo monitorInfo)
 		monitorInfo.monitorHeight,
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
+	SetFocus(g_progmanWindowHandle); // Bring desktop back to focus (Fix for multiple displays)
 }
 
 void CleanupRaylibDesktop()

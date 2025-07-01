@@ -1,4 +1,3 @@
-
 #include "RaylibDesktop.h"
 #include "raylib.h"
 #include "../clock.h"
@@ -41,10 +40,6 @@ int main(int argc, char** argv)
 		{
 			WaitTime(0.1);
 			continue;
-		}
-		if (RaylibDesktopIsMouseButtonDown(1))
-		{
-			break;
 		}
 		Loop();
 	}

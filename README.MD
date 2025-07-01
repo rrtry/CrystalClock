@@ -4,9 +4,10 @@ Re-creation of PS2's display clock in Raylib
 For Desktop: 'k' to show/hide time, 'j' to enable/disable 'orbs only' mode.\
 For Mobile: 'Swipe up' to show/hide time, 'Swipe down' to enable/disable 'orbs only' mode
 # Build
-Install and configure CMake and then run the following from the root directory of the project:
+Windows users have the option to set `-DDESKTOP_WALLPAPER=ON` to build 
+live wallpaper version of the program.
 ``` bash
-cmake -B build
+cmake -S . -B build -DDESKTOP_WALLPAPER=OFF
 cmake --build build --config Release
 ```
 Binary will appear in bin/Release directory. Copy resources/ directory there or create a symlink:
@@ -19,6 +20,9 @@ ln -s ../../resources resources
 mklink resources ../../resources
 ```
 # Usage
+Note: 
+Live wallpaper version will ignore resolution and window style parameters. To specify target display for the wallpaper, use `-display`.
+
 Specify width and height of the window:
 ```
 crystalclock.exe -width 1920 -height 1080
@@ -56,3 +60,7 @@ nosound     = 0
 ![Clock2](/images/clock2.png "Clock preview")
 ![Clock3](/images/clock3.png "Clock preview")
 ![Clock4](/images/clock4.jpg "Clock preview")
+
+# Credits
+[Jens Roth](https://github.com/jensroth-git) https://github.com/jensroth-git/RaylibLiveWallpaper
+[Ray](https://github.com/raysan5) https://github.com/raysan5/raylib
