@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 	MonitorInfo monitorInfo = GetWallpaperTarget(GetTargetDisplay());
 
 	// Set resolution
-	SetWindowResolution(monitorInfo.monitorWidth, monitorInfo.monitorHeight);
+	SetWindowResolution(monitorInfo.rcWorkWidth, monitorInfo.rcWorkHeight);
 
 	// Initialize
 	SetShowTime(false);

@@ -63,6 +63,13 @@ BOOL CALLBACK MonitorEnumProc(
 		currentMonitorInfo.monitorWidth = widthOfMonitor;
 		currentMonitorInfo.monitorHeight = heightOfMonitor;
 
+		currentMonitorInfo.rcWorkLeft   = monitorInfoEx.rcWork.left;
+		currentMonitorInfo.rcWorkTop    = monitorInfoEx.rcWork.top;
+		currentMonitorInfo.rcWorkRight  = monitorInfoEx.rcWork.right;
+		currentMonitorInfo.rcWorkBottom = monitorInfoEx.rcWork.bottom;
+		currentMonitorInfo.rcWorkWidth  = monitorInfoEx.rcWork.right  - monitorInfoEx.rcWork.left;
+		currentMonitorInfo.rcWorkHeight = monitorInfoEx.rcWork.bottom - monitorInfoEx.rcWork.top;
+
 		// Add the monitor information to the vector
 		pointerToMonitorVector->push_back(currentMonitorInfo);
 	}
@@ -386,22 +393,22 @@ void RaylibDesktopReparentWindow(void *raylibWindowHandle)
 void ConfigureDesktopPositioning(MonitorInfo monitorInfo)
 {
 	g_selectedMonitor = monitorInfo;
+	RECT rc = RECT { monitorInfo.rcWorkLeft, monitorInfo.rcWorkTop, 
+					 monitorInfo.rcWorkRight, monitorInfo.rcWorkBottom };
 
-	// SetWindowPos(g_raylibWindowHandle, NULL, 0, 0, monitorInfo.monitorWidth, monitorInfo.monitorHeight, SWP_NOZORDER
-	// | SWP_NOACTIVATE);
+	DWORD style   = GetWindowLong(g_raylibWindowHandle, GWL_STYLE);
+	DWORD exStyle = GetWindowLong(g_raylibWindowHandle, GWL_EXSTYLE);
+	AdjustWindowRectEx(&rc, style, FALSE, exStyle);
 
-	// Resize/reposition the raylib window to match its new parent.
-	// g_progmanWindowHandle spans the entire virtual desktop in modern builds
 	SetWindowPos(
-		g_raylibWindowHandle,
-		NULL,
-		monitorInfo.monitorLeftCoordinate,
-		monitorInfo.monitorTopCoordinate,
-		monitorInfo.monitorWidth,
-		monitorInfo.monitorHeight,
+		g_raylibWindowHandle, 
+		NULL, 
+		rc.left, 
+		rc.top, 
+		rc.right - rc.left, 
+		rc.bottom - rc.top, 
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
-	SetFocus(g_progmanWindowHandle); // Bring desktop back to focus (Fix for multiple displays)
 }
 
 void CleanupRaylibDesktop()

@@ -12,6 +12,14 @@ typedef struct MonitorInfo
 	int monitorTopCoordinate; // Y coordinate of the monitor's top-left corner
 	int monitorWidth; // Monitor width in pixels
 	int monitorHeight; // Monitor height in pixels
+
+	int rcWorkLeft;
+	int rcWorkTop;
+	int rcWorkRight;
+	int rcWorkBottom;
+	
+	int rcWorkWidth;
+	int rcWorkHeight;
 };
 
 // Enumerate all monitors and return their information
