@@ -34,6 +34,9 @@ void ConfigureDesktopPositioning(MonitorInfo monitorInfo);
 // Monitor Occlusion Detection
 bool IsMonitorOccluded(const MonitorInfo &monitor, double occlusionThreshold = 0.95);
 
+// Check if desktop is occluded by Lock/Secure screen
+bool IsDesktopLocked();
+
 // Call this function to reparent the raylib window to the desktop after raylib has created its own.
 void RaylibDesktopReparentWindow(void *raylibWindowHandle);
 

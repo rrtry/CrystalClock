@@ -2,11 +2,15 @@
 
 #include <Windows.h>
 #include <limits>
+#include <memory>
 
 // For occlusion detection
 #include <dwmapi.h>
 // Required for DwmGetWindowAttribute
 #pragma comment(lib, "Dwmapi.lib")
+
+#include <shlwapi.h>
+#pragma comment(lib, "Shlwapi.lib")
 
 // For DPI awareness functions
 #include <shellscalingapi.h>
@@ -363,7 +367,7 @@ void RaylibDesktopReparentWindow(void *raylibWindowHandle)
 {
 	g_raylibWindowHandle = (HWND)raylibWindowHandle;
 
-	// Prepare the raylib window to be a layered child of Progman
+	// Prepare the raylib window to be a layered child of WorkerW
 	LONG_PTR style = GetWindowLongPtr(g_raylibWindowHandle, GWL_STYLE);
 	style &= ~(WS_OVERLAPPEDWINDOW); // Remove decorations
 	style |= WS_CHILD; // Child style required for SetParent
@@ -374,20 +378,8 @@ void RaylibDesktopReparentWindow(void *raylibWindowHandle)
 	SetWindowLongPtr(g_raylibWindowHandle, GWL_EXSTYLE, exStyle);
 	SetLayeredWindowAttributes(g_raylibWindowHandle, 0, 255, LWA_ALPHA);
 
-	// Reparent the raylib window directly to Progman
-	SetParent(g_raylibWindowHandle, g_progmanWindowHandle);
-
-	// Ensure correct Z-order: below icons but above the system wallpaper
-	if (g_shellViewWindowHandle) {
-		SetWindowPos(
-			g_raylibWindowHandle, g_shellViewWindowHandle, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE
-		);
-	}
-	if (g_workerWindowHandle) {
-		SetWindowPos(g_workerWindowHandle, g_raylibWindowHandle, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-	}
-
-	RedrawWindow(g_raylibWindowHandle, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+	// Reparent the raylib window to WorkerW
+	SetParent(g_raylibWindowHandle, g_workerWindowHandle);
 }
 
 void ConfigureDesktopPositioning(MonitorInfo monitorInfo)
@@ -400,6 +392,7 @@ void ConfigureDesktopPositioning(MonitorInfo monitorInfo)
 	DWORD exStyle = GetWindowLong(g_raylibWindowHandle, GWL_EXSTYLE);
 	AdjustWindowRectEx(&rc, style, FALSE, exStyle);
 
+	// Make sure that the raylib window is within 'work area' bounds
 	SetWindowPos(
 		g_raylibWindowHandle, 
 		NULL, 
@@ -409,6 +402,76 @@ void ConfigureDesktopPositioning(MonitorInfo monitorInfo)
 		rc.bottom - rc.top, 
 		SWP_NOZORDER | SWP_NOACTIVATE
 	);
+}
+
+struct DesktopCloser
+{
+	void operator()(HDESK h) const noexcept
+	{
+		if (h) {
+			CloseDesktop(h);
+		}
+	}
+};
+using unique_desktop = std::unique_ptr<std::remove_pointer_t<HDESK>, DesktopCloser>;
+
+struct HandleCloser
+{
+	void operator()(HANDLE h) const noexcept
+	{
+		if (h) {
+			CloseHandle(h);
+		}
+	}
+};
+using unique_handle = std::unique_ptr<std::remove_pointer_t<HANDLE>, HandleCloser>;
+
+static bool IsSecureDesktop()
+{
+	unique_desktop desktop {OpenInputDesktop(0, FALSE, DESKTOP_READOBJECTS)};
+	if (!desktop) // couldn’t query ⇒ assume we’re secure to be conservative
+		return true;
+
+	DWORD bytes = 0;
+	if (!GetUserObjectInformationW(desktop.get(), UOI_NAME, nullptr, 0, &bytes) && GetLastError() != ERROR_INSUFFICIENT_BUFFER) 
+	{
+		return true; // genuine failure
+	}
+
+	if (bytes == 0)
+		return true; // shouldn’t happen, but stay conservative
+
+	std::vector<wchar_t> name((bytes / sizeof(wchar_t)) + 1, L'\0');
+	if (!GetUserObjectInformationW(desktop.get(), UOI_NAME, name.data(), bytes, &bytes))
+		return true;
+
+	return _wcsicmp(name.data(), L"Default") != 0;
+}
+
+bool IsDesktopLocked()
+{
+	if (IsSecureDesktop())
+		return true;
+
+	HWND hwnd = GetForegroundWindow();
+	if (!hwnd)
+		return false;
+
+	DWORD pid = 0;
+	GetWindowThreadProcessId(hwnd, &pid);
+	if (pid == 0)
+		return false;
+
+	unique_handle proc {OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid)};
+	if (!proc)
+		return false;
+
+	WCHAR path[MAX_PATH];
+	DWORD len = std::size(path);
+	if (!QueryFullProcessImageNameW(proc.get(), 0, path, &len))
+		return false;
+
+	return _wcsicmp(PathFindFileNameW(path), L"LockApp.exe") == 0;
 }
 
 void CleanupRaylibDesktop()

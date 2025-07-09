@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 	while (!WindowShouldClose()) 
 	{
 		// skip rendering if the wallpaper is occluded more than 95%
-		if (IsMonitorOccluded(monitorInfo, 0.95)) 
+		if (IsMonitorOccluded(monitorInfo, 0.95) || IsDesktopLocked()) 
 		{
 			WaitTime(0.1);
 			continue;
