@@ -1,11 +1,11 @@
-import com.android.build.api.variant.FilterConfiguration
+//import com.android.build.api.variant.FilterConfiguration
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
 
-val abiCodes = mapOf("armeabi-v7a" to 1, "x86" to 2, "x86_64" to 3, "arm64-v8a" to 4);
+//val abiCodes = mapOf("armeabi-v7a" to 1, "x86" to 2, "x86_64" to 3, "arm64-v8a" to 4);
 
 android {
     namespace = "com.rrtry.crystalclock"
@@ -27,19 +27,21 @@ android {
         applicationId = "com.rrtry.crystalclock"
         minSdk = 26
         targetSdk = 35
-        versionCode = 101
-        versionName = "1.0.1"
+        versionCode = 104
+        versionName = "1.0.4"
 
         externalNativeBuild {
             cmake {
                 val glVersion = "ES20"
                 arguments += "-DGL_VERSION=$glVersion"
+                arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
                 cppFlags += "-std=c++11"
             }
         }
         signingConfig = signingConfigs.getByName("release-cfg")
     }
 
+    /*
     splits {
         abi {
             this.isEnable = true
@@ -48,6 +50,7 @@ android {
             this.isUniversalApk = false
         }
     }
+     */
 
     buildTypes {
         release {
@@ -57,6 +60,10 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release-cfg")
+            ndk {
+                abiFilters.clear()
+                abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))
+            }
         }
     }
     compileOptions {
@@ -73,7 +80,7 @@ android {
         }
     }
 }
-
+/*
 androidComponents {
     onVariants { variant ->
         val baseVersionCode = variant.outputs.first().versionCode.get()?.toInt() ?: 1
@@ -86,3 +93,4 @@ androidComponents {
         }
     }
 }
+ */
