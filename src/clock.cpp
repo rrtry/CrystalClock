@@ -105,6 +105,7 @@ Matrix TM = MatrixMultiply(MatrixRotateX(PI + PI / 2), MatrixTranslate(0.f, 0.f,
 Matrix TN = MatrixInvert(MatrixTranspose(TM));
 
 // Time structs
+TimePoint tp = chrono::system_clock::now();
 Time currentTime;
 ElapsedSeconds elapsedSeconds;
 
@@ -207,7 +208,7 @@ void DrawTrailSegment(TimePoint& prevTimePoint, Vector3& lastPos, float radius, 
     Vector3 prevPosition = GetOrbPosition(prevTimePoint, deltaTime, radius, hourAngle, orbIndex);
 
     prevTimePoint -= chrono::milliseconds((int)(deltaTime * 1000.f));
-    DrawLine3D(lastPos, prevPosition, Fade(WHITE, 0.7f));
+    DrawLine3D(lastPos, prevPosition, Fade(WHITE, 0.8f));
     lastPos = prevPosition;
 }
 
@@ -216,21 +217,6 @@ void DrawTrail(TimePoint prevTimePoint, float radius, float hourAngle, int orbIn
     Vector3 lastPosition = GetOrbPosition(prevTimePoint, GetFrameTime(), radius, hourAngle, orbIndex);
     for (int j = 0; j < TRAIL_LENGTH; j++)
         DrawTrailSegment(prevTimePoint, lastPosition, radius, hourAngle, orbIndex);
-    
-    /*
-    float deltaTime;
-    for (int j = 0; j < TRAIL_LENGTH; j++)
-    {
-        deltaTime = GetFrameTime();
-        GetTimeInfo(&prevTime, prevTimePoint);
-        GetElapsedSeconds(&prevSeconds, prevTime);
-
-        rotation      = GetRotationMatrix(prevSeconds, prevTime, hourAngle);
-        prevPosition  = GetOrbPosition(prevSeconds.minute, radius, orbIndex, rotation);
-        prevTimePoint -= chrono::milliseconds((int)(deltaTime * 1000.f));
-
-        DrawBillboard(camera, orbTexture, prevPosition, 0.3f, Fade(WHITE, 0.7f));
-    } */
 }
 
 void DrawOrbs(float radius)
@@ -622,7 +608,7 @@ void SetRenderOptions()
     rlDisableBackfaceCulling();
 
     rlSetClipPlanes(CAMERA_NEAR_PLANE, CAMERA_FAR_PLANE);
-    rlSetLineWidth(1.5f);
+    rlSetLineWidth(2.0f);
 }
 
 void ResizeWindow()
@@ -681,13 +667,37 @@ void HandleControls()
 #endif
 }
 
+// Debug controls
+void AdvanceTime()
+{
+    if (IsKeyDown(KEY_RIGHT))
+        tp += chrono::milliseconds(static_cast<long long>(GetFrameTime() * 1000 * (IsKeyDown(KEY_UP) ? 3 : 1)));
+    if (IsKeyDown(KEY_LEFT))
+        tp -= chrono::milliseconds(static_cast<long long>(GetFrameTime() * 1000 * (IsKeyDown(KEY_DOWN) ? 3 : 1)));
+
+    if (IsKeyPressed(KEY_E))
+        tp += chrono::hours(1);
+    if (IsKeyPressed(KEY_Q))
+        tp -= chrono::hours(1);
+    
+    if (IsKeyPressed(KEY_X))
+        tp += chrono::minutes(1);
+    if (IsKeyPressed(KEY_Z))
+        tp -= chrono::minutes(1);
+    
+    GetTimeInfo(&currentTime, tp);
+    GetElapsedSeconds(&elapsedSeconds, currentTime);
+}
+
 void Update()
 {
     if (playSound)
         UpdateMusicStream(ambience);
     
+    AdvanceTime();
+    /*
     GetTimeInfo(&currentTime);
-    GetElapsedSeconds(&elapsedSeconds, currentTime);
+    GetElapsedSeconds(&elapsedSeconds, currentTime); */
 
     elapsedTime     = (float)GetTime();
     secondsInMinute = elapsedSeconds.minute;
