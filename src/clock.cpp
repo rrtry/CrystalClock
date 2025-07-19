@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <clocale>
+#include <vector>
 
 #if defined(PLATFORM_WEB) || defined(PLATFORM_ANDROID)
     #define GLSL_VERSION 100
@@ -22,8 +23,9 @@ const Vector3 PRISM_COLORS[] = {
 };
 
 const int ORBS         = 7;
-const int TRAIL_LENGTH = 25;
+const int TRAIL_LENGTH = 30 * 2;
 
+const float ORB_SCALE         = 2.0f;
 const float MAX_SPHERE_RADIUS = 6.0f;
 const float MIN_SPHERE_RADIUS = MAX_SPHERE_RADIUS / 2;
 
@@ -184,17 +186,38 @@ Vector3 GetOrbPosition(float time, float radius, int orbIndex, const Matrix& rot
     );
 }
 
-//------------------------------------------------------------------------------------
-// Drawing functions
-//------------------------------------------------------------------------------------
-void DrawTrail(TimePoint prevTimePoint, float radius, float hourAngle, int orbIndex)
+Vector3 GetOrbPosition(const TimePoint& prevTimePoint, float deltaTime, float radius, float hourAngle, int orbIndex)
 {
     Time prevTime;
     ElapsedSeconds prevSeconds;
 
-    Vector3 prevPosition;
-    Matrix rotation;
+    GetTimeInfo(&prevTime, prevTimePoint);
+    GetElapsedSeconds(&prevSeconds, prevTime);
 
+    Matrix rotation = GetRotationMatrix(prevSeconds, prevTime, hourAngle);
+    return GetOrbPosition(prevSeconds.minute, radius, orbIndex, rotation);
+}
+
+//------------------------------------------------------------------------------------
+// Drawing functions
+//------------------------------------------------------------------------------------
+void DrawTrailSegment(TimePoint& prevTimePoint, Vector3& lastPos, float radius, float hourAngle, int orbIndex)
+{
+    float deltaTime = GetFrameTime();
+    Vector3 prevPosition = GetOrbPosition(prevTimePoint, deltaTime, radius, hourAngle, orbIndex);
+
+    prevTimePoint -= chrono::milliseconds((int)(deltaTime * 1000.f));
+    DrawLine3D(lastPos, prevPosition, Fade(WHITE, 0.7f));
+    lastPos = prevPosition;
+}
+
+void DrawTrail(TimePoint prevTimePoint, float radius, float hourAngle, int orbIndex)
+{
+    Vector3 lastPosition = GetOrbPosition(prevTimePoint, GetFrameTime(), radius, hourAngle, orbIndex);
+    for (int j = 0; j < TRAIL_LENGTH; j++)
+        DrawTrailSegment(prevTimePoint, lastPosition, radius, hourAngle, orbIndex);
+    
+    /*
     float deltaTime;
     for (int j = 0; j < TRAIL_LENGTH; j++)
     {
@@ -207,7 +230,7 @@ void DrawTrail(TimePoint prevTimePoint, float radius, float hourAngle, int orbIn
         prevTimePoint -= chrono::milliseconds((int)(deltaTime * 1000.f));
 
         DrawBillboard(camera, orbTexture, prevPosition, 0.3f, Fade(WHITE, 0.7f));
-    }
+    } */
 }
 
 void DrawOrbs(float radius)
@@ -226,7 +249,7 @@ void DrawOrbs(float radius)
                 RL_SHADER_UNIFORM_VEC3
         );
 
-        DrawBillboard(camera, orbTexture, orbPosition, 2.f, WHITE);
+        DrawBillboard(camera, orbTexture, orbPosition, ORB_SCALE, WHITE);
         DrawTrail(currentTime.timePoint, radius, hourAngle, i);
     }
 }
@@ -599,7 +622,7 @@ void SetRenderOptions()
     rlDisableBackfaceCulling();
 
     rlSetClipPlanes(CAMERA_NEAR_PLANE, CAMERA_FAR_PLANE);
-    rlSetLineWidth(2.f);
+    rlSetLineWidth(1.5f);
 }
 
 void ResizeWindow()
