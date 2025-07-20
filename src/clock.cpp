@@ -25,7 +25,7 @@ const Vector3 PRISM_COLORS[] = {
 const int ORBS         = 7;
 const int TRAIL_LENGTH = 30 * 2;
 
-const float ORB_SCALE         = 2.0f;
+const float ORB_SCALE         = 2.5f;
 const float MAX_SPHERE_RADIUS = 6.0f;
 const float MIN_SPHERE_RADIUS = MAX_SPHERE_RADIUS / 2;
 
@@ -236,6 +236,7 @@ void DrawOrbs(float radius)
         );
 
         DrawBillboard(camera, orbTexture, orbPosition, ORB_SCALE, WHITE);
+        DrawBillboard(camera, orbTexture, orbPosition, ORB_SCALE * 0.5, WHITE);
         DrawTrail(currentTime.timePoint, radius, hourAngle, i);
     }
 }
