@@ -677,34 +677,11 @@ void HandleControls()
 #endif
 }
 
-// Debug controls
-void AdvanceTime()
-{
-    if (IsKeyDown(KEY_RIGHT))
-        currentTime.timePoint += chrono::milliseconds(static_cast<long long>(GetFrameTime() * 1000 * (IsKeyDown(KEY_UP) ? 3 : 1)));
-    if (IsKeyDown(KEY_LEFT))
-        currentTime.timePoint -= chrono::milliseconds(static_cast<long long>(GetFrameTime() * 1000 * (IsKeyDown(KEY_DOWN) ? 3 : 1)));
-
-    if (IsKeyPressed(KEY_E))
-        currentTime.timePoint += chrono::hours(1);
-    if (IsKeyPressed(KEY_Q))
-        currentTime.timePoint -= chrono::hours(1);
-    
-    if (IsKeyPressed(KEY_X))
-        currentTime.timePoint += chrono::minutes(1);
-    if (IsKeyPressed(KEY_Z))
-        currentTime.timePoint -= chrono::minutes(1);
-    
-    GetTimeInfo(&currentTime, currentTime.timePoint);
-    GetElapsedSeconds(&elapsedSeconds, currentTime);
-}
-
 void Update()
 {
     if (playSound)
         UpdateMusicStream(ambience);
     
-    //AdvanceTime();
     GetTimeInfo(&currentTime);
     GetElapsedSeconds(&elapsedSeconds, currentTime);
 
