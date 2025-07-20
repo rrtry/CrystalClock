@@ -5,6 +5,7 @@
         "iostream": "cpp",
         "xiosbase": "cpp",
         "xutility": "cpp",
-        "*.m": "cpp"
+        "*.m": "cpp",
+        "chrono": "cpp"
     }
 }

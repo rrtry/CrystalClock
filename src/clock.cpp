@@ -22,9 +22,10 @@ const Vector3 PRISM_COLORS[] = {
     { 0.03f, 0.39f, 0.45f }
 };
 
-const int ORBS         = 7;
-const int TRAIL_LENGTH = 30 * 2;
+const int ORBS           = 7;
+const int TRAIL_SEGMENTS = 80;
 
+const float TRAIL_WIDTH       = 2.0f;
 const float ORB_SCALE         = 2.5f;
 const float MAX_SPHERE_RADIUS = 6.0f;
 const float MIN_SPHERE_RADIUS = MAX_SPHERE_RADIUS / 2;
@@ -33,9 +34,9 @@ const float SPHERE_SCALE_TIME = 1.5f;
 const float PRISM_SCALE_TIME  = 1.5f;
 const float FADE_TIME         = 2.0f;
 const float START_FADE_TIME   = 4.0f;
+const float TRAIL_FADE_TIME   = 2000.f;
 
-const float FIXED_FOV = 70.f;
-
+const float FIXED_FOV  = 70.f;
 const float X_SPEED    = PI / 2;
 const float Z_SPEED    = -PI;
 const float ANGLE_STEP = 360.f / 60.f;
@@ -105,13 +106,13 @@ Matrix TM = MatrixMultiply(MatrixRotateX(PI + PI / 2), MatrixTranslate(0.f, 0.f,
 Matrix TN = MatrixInvert(MatrixTranspose(TM));
 
 // Time structs
-TimePoint tp = chrono::system_clock::now();
 Time currentTime;
 ElapsedSeconds elapsedSeconds;
 
 Vector3 clockPosition = { 0.0f, MAX_SPHERE_RADIUS + 0.5f, 0.0f };
 Vector3 prismColor;
 
+float deltaTime;
 float elapsedTime;     // Time since start
 float secondsInMinute; // Orbs position
 float secondsInHour;   // 'Time left' indicator for crystal rods
@@ -187,7 +188,7 @@ Vector3 GetOrbPosition(float time, float radius, int orbIndex, const Matrix& rot
     );
 }
 
-Vector3 GetOrbPosition(const TimePoint& prevTimePoint, float deltaTime, float radius, float hourAngle, int orbIndex)
+Vector3 GetOrbPosition(const TimePoint& prevTimePoint, float radius, float hourAngle, int orbIndex)
 {
     Time prevTime;
     ElapsedSeconds prevSeconds;
@@ -202,21 +203,30 @@ Vector3 GetOrbPosition(const TimePoint& prevTimePoint, float deltaTime, float ra
 //------------------------------------------------------------------------------------
 // Drawing functions
 //------------------------------------------------------------------------------------
+float GetSegmentAlpha(const TimePoint& prevTimePoint)
+{
+    auto now    = currentTime.timePoint;
+    auto diff   = now - prevTimePoint;
+    auto millis = chrono::duration_cast<chrono::milliseconds>(diff).count();
+    return Lerp(1.0f, 0.0f, Normalize(millis, 0.f, TRAIL_FADE_TIME));
+}
+
 void DrawTrailSegment(TimePoint& prevTimePoint, Vector3& lastPos, float radius, float hourAngle, int orbIndex)
 {
-    float deltaTime = GetFrameTime();
-    Vector3 prevPosition = GetOrbPosition(prevTimePoint, deltaTime, radius, hourAngle, orbIndex);
-
+    Vector3 prevPosition = GetOrbPosition(prevTimePoint, radius, hourAngle, orbIndex);
     prevTimePoint -= chrono::milliseconds((int)(deltaTime * 1000.f));
-    DrawLine3D(lastPos, prevPosition, Fade(WHITE, 0.8f));
+
+    DrawLine3D(lastPos, prevPosition, Fade(WHITE, GetSegmentAlpha(prevTimePoint)));
     lastPos = prevPosition;
 }
 
 void DrawTrail(TimePoint prevTimePoint, float radius, float hourAngle, int orbIndex)
 {
-    Vector3 lastPosition = GetOrbPosition(prevTimePoint, GetFrameTime(), radius, hourAngle, orbIndex);
-    for (int j = 0; j < TRAIL_LENGTH; j++)
+    Vector3 lastPosition = GetOrbPosition(prevTimePoint, radius, hourAngle, orbIndex);
+    for (int j = 0; j < TRAIL_SEGMENTS; j++)
+    {
         DrawTrailSegment(prevTimePoint, lastPosition, radius, hourAngle, orbIndex);
+    }
 }
 
 void DrawOrbs(float radius)
@@ -605,11 +615,10 @@ void SetRenderOptions()
 {
     rlEnableColorBlend();
     rlEnableSmoothLines();
-
     rlDisableBackfaceCulling();
 
     rlSetClipPlanes(CAMERA_NEAR_PLANE, CAMERA_FAR_PLANE);
-    rlSetLineWidth(2.0f);
+    rlSetLineWidth(TRAIL_WIDTH);
 }
 
 void ResizeWindow()
@@ -672,21 +681,21 @@ void HandleControls()
 void AdvanceTime()
 {
     if (IsKeyDown(KEY_RIGHT))
-        tp += chrono::milliseconds(static_cast<long long>(GetFrameTime() * 1000 * (IsKeyDown(KEY_UP) ? 3 : 1)));
+        currentTime.timePoint += chrono::milliseconds(static_cast<long long>(GetFrameTime() * 1000 * (IsKeyDown(KEY_UP) ? 3 : 1)));
     if (IsKeyDown(KEY_LEFT))
-        tp -= chrono::milliseconds(static_cast<long long>(GetFrameTime() * 1000 * (IsKeyDown(KEY_DOWN) ? 3 : 1)));
+        currentTime.timePoint -= chrono::milliseconds(static_cast<long long>(GetFrameTime() * 1000 * (IsKeyDown(KEY_DOWN) ? 3 : 1)));
 
     if (IsKeyPressed(KEY_E))
-        tp += chrono::hours(1);
+        currentTime.timePoint += chrono::hours(1);
     if (IsKeyPressed(KEY_Q))
-        tp -= chrono::hours(1);
+        currentTime.timePoint -= chrono::hours(1);
     
     if (IsKeyPressed(KEY_X))
-        tp += chrono::minutes(1);
+        currentTime.timePoint += chrono::minutes(1);
     if (IsKeyPressed(KEY_Z))
-        tp -= chrono::minutes(1);
+        currentTime.timePoint -= chrono::minutes(1);
     
-    GetTimeInfo(&currentTime, tp);
+    GetTimeInfo(&currentTime, currentTime.timePoint);
     GetElapsedSeconds(&elapsedSeconds, currentTime);
 }
 
@@ -695,11 +704,11 @@ void Update()
     if (playSound)
         UpdateMusicStream(ambience);
     
-    AdvanceTime();
-    /*
+    //AdvanceTime();
     GetTimeInfo(&currentTime);
-    GetElapsedSeconds(&elapsedSeconds, currentTime); */
+    GetElapsedSeconds(&elapsedSeconds, currentTime);
 
+    deltaTime       = GetFrameTime();
     elapsedTime     = (float)GetTime();
     secondsInMinute = elapsedSeconds.minute;
     secondsInHour   = elapsedSeconds.hour;
@@ -731,8 +740,7 @@ void Update()
     }
     else if (fading)
     {
-        float deltaTime = GetFrameTime();
-        Vector3 color   = Vector3Lerp(
+        Vector3 color = Vector3Lerp(
                 showClock ? Vector3({ 255, 255, 255 }) : Vector3({ 0, 0, 0 }),
                 showClock ? Vector3({ 0, 0, 0 }) : Vector3({ 255, 255, 255 }),
                 fadeAnim / FADE_TIME
@@ -750,7 +758,6 @@ void Update()
 
     if (newHour)
     {
-        float deltaTime = GetFrameTime();
         sphereRadius = InvLerpSphereRadius(sphereRadiusAnim);
         sphereRadiusAnim += deltaTime;
 

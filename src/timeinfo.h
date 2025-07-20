@@ -5,7 +5,8 @@
 #include <string>
 
 using namespace std;
-typedef chrono::system_clock::time_point TimePoint;
+using TimePoint = chrono::system_clock::time_point;
+using Duration  = chrono::duration<float, std::milli>;
 
 typedef struct 
 {
