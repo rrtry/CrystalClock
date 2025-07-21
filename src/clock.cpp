@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <clocale>
+#include <vector>
 
 #if defined(PLATFORM_WEB) || defined(PLATFORM_ANDROID)
     #define GLSL_VERSION 100
@@ -21,9 +22,8 @@ const Vector3 PRISM_COLORS[] = {
     { 0.03f, 0.39f, 0.45f }
 };
 
-const int FRAME_RATE     = 60;
 const int ORBS           = 7;
-const int TRAIL_SEGMENTS = 120;
+const int TRAIL_SEGMENTS = 80;
 
 const float TRAIL_WIDTH       = 2.0f;
 const float ORB_SCALE         = 2.5f;
@@ -34,7 +34,7 @@ const float SPHERE_SCALE_TIME = 1.5f;
 const float PRISM_SCALE_TIME  = 1.5f;
 const float FADE_TIME         = 2.0f;
 const float START_FADE_TIME   = 4.0f;
-const float TRAIL_FADE_TIME   = TRAIL_SEGMENTS * (1.f / FRAME_RATE);
+const float TRAIL_FADE_TIME   = 2000.f;
 
 const float FIXED_FOV  = 70.f;
 const float X_SPEED    = PI / 2;
@@ -46,9 +46,8 @@ const double CAMERA_NEAR_PLANE = 0.1;
 const double CAMERA_FAR_PLANE  = 100.0;
 
 //------------------------------------------------------------------------------------
-// Window parameters
+// Window size
 //------------------------------------------------------------------------------------
-const char* WINDOW_TITLE = "CrystalClock";
 int screenWidth  = 0;
 int screenHeight = 0;
 int windowFlags  = 0;
@@ -74,6 +73,7 @@ Music ambience;
 // Framebuffers
 //------------------------------------------------------------------------------------
 RenderTexture tunnelLayer;
+RenderTexture orbsLayer;
 RenderTexture clockLayer;
 
 //------------------------------------------------------------------------------------
@@ -430,17 +430,13 @@ void InitCamera()
 
     camera.fovy = GetVerticalFOV();
     camera.projection = CAMERA_PERSPECTIVE;
-    SetTargetFPS(FRAME_RATE);
+    SetTargetFPS(60);
 }
 
 void InitWindow()
 {
-    unsigned int flags = windowFlags | FLAG_WINDOW_RESIZABLE;
-    if (GLSL_VERSION != 330)
-        flags |= FLAG_MSAA_4X_HINT;
-
-    SetConfigFlags(flags);
-    InitWindow(screenWidth, screenHeight, WINDOW_TITLE);
+    SetConfigFlags(windowFlags | FLAG_WINDOW_RESIZABLE);
+    InitWindow(screenWidth, screenHeight, "CrystalClock");
 
     if (screenWidth == 0 || screenHeight == 0)
     {
@@ -494,6 +490,7 @@ void LoadResources()
     // Textures/models
     //------------------------------------------------------------------------------------
     tunnelLayer = LoadRenderTexture(screenWidth, screenHeight);
+    orbsLayer   = LoadRenderTexture(screenWidth, screenHeight);
     clockLayer  = LoadRenderTexture(screenWidth, screenHeight);
 
     prism = LoadModel("resources/prism.obj");
@@ -610,6 +607,7 @@ void UnloadResources()
     UnloadModel(tube);
 
     UnloadRenderTexture(tunnelLayer);
+    UnloadRenderTexture(orbsLayer);
     UnloadRenderTexture(clockLayer);
 }
 
@@ -635,9 +633,11 @@ void ResizeWindow()
         screenHeight = GetScreenHeight();
 
         UnloadRenderTexture(tunnelLayer);
+        UnloadRenderTexture(orbsLayer);
         UnloadRenderTexture(clockLayer);
 
         tunnelLayer = LoadRenderTexture(screenWidth, screenHeight);
+        orbsLayer   = LoadRenderTexture(screenWidth, screenHeight);
         clockLayer  = LoadRenderTexture(screenWidth, screenHeight);
 
         SetWindowSize(screenWidth, screenHeight);
@@ -804,9 +804,26 @@ void Render()
     }
 
     //------------------------------------------------------------------------------------
-    // Clock layer
+    // Orbs layer
     //------------------------------------------------------------------------------------
     rlSetBlendMode(RL_BLEND_ADDITIVE);
+    BeginTextureMode(orbsLayer);
+        BeginMode3D(camera);
+
+            ClearBackground(Fade(BLACK, 0.0));
+            rlDisableDepthMask();
+
+            BeginShaderMode(orbShader);
+            DrawOrbs(sphereRadius);
+            EndShaderMode();
+
+            rlEnableDepthMask();
+        EndMode3D();
+    EndTextureMode();
+
+    //------------------------------------------------------------------------------------
+    // Clock layer
+    //------------------------------------------------------------------------------------
     if (showClock || fading)
     {
         BeginTextureMode(clockLayer);
@@ -818,7 +835,7 @@ void Render()
     }
 
     //------------------------------------------------------------------------------------
-    // Blend two layers
+    // Blend three layers
     //------------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(BLACK);
@@ -842,24 +859,16 @@ void Render()
         if (showTime)
             DrawDateTime();
     }
-    //------------------------------------------------------------------------------------
-    // Orbs and trails
-    //------------------------------------------------------------------------------------
-    BeginMode3D(camera);
-
-        rlDisableDepthMask();
-
-        BeginShaderMode(orbShader);
-        DrawOrbs(sphereRadius);
-        EndShaderMode();
-
-        rlEnableDepthMask();
-        EndMode3D();
+    DrawTextureRec(orbsLayer.texture,  { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, orbLayerTint);
     EndDrawing();
 }
 
-void Initialize()
+bool Initialize()
 {
+    if (screenWidth <= 0 || screenHeight <= 0)
+    {
+        return false;
+    }
     //------------------------------------------------------------------------------------
     // Set time locale
     //------------------------------------------------------------------------------------
@@ -884,18 +893,18 @@ void Initialize()
     // Setting render options
     //------------------------------------------------------------------------------------
     SetRenderOptions();
+    return true;
 }
 
-void Initialize(int argc, char** argv)
+bool Initialize(int argc, char** argv)
 {
     //------------------------------------------------------------------------------------
     // Parse command line parameters
     //------------------------------------------------------------------------------------
     if (!ParseConfig(argc, argv, false))
-    {
-        cerr << "Failed to parse config" << endl;
-    }
-    Initialize();
+        return false;
+    
+    return Initialize();
 }
 
 void Uninitialize()

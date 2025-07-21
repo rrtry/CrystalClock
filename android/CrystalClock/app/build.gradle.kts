@@ -62,7 +62,7 @@ android {
             signingConfig = signingConfigs.getByName("release-cfg")
             ndk {
                 abiFilters.clear()
-                abiFilters.addAll(listOf("x86", "x86_64", "arm64-v8a", "armeabi-v7a"))
+                abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))
             }
         }
     }

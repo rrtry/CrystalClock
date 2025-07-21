@@ -1,8 +1,8 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-void Initialize(int argc, char** argv);
-void Initialize();
+bool Initialize(int argc, char** argv);
+bool Initialize();
 bool ParseConfig(int argc, char** argv, bool prefsOnly);
 
 void Uninitialize();
