@@ -67,9 +67,8 @@ int main(int argc, char** argv)
     SetWindowResolution(res.first, res.second);
     SetFadeIn(false);
     SetShowTime(false);
-
-    if (!Initialize())
-        return 1;
+    
+    Initialize();
 
     while (!WindowShouldClose())
         Loop();

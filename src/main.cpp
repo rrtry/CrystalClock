@@ -6,9 +6,7 @@
 //------------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-    if (!Initialize(argc, argv))
-        return 1;
-    
+    Initialize(argc, argv);
     while (!WindowShouldClose())
         Loop();
     
