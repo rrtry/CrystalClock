@@ -23,7 +23,7 @@ const Vector3 PRISM_COLORS[] = {
 };
 
 const int ORBS           = 7;
-const int TRAIL_SEGMENTS = 80;
+const int TRAIL_SEGMENTS = 120;
 
 const float TRAIL_WIDTH       = 2.0f;
 const float ORB_SCALE         = 2.5f;
@@ -34,7 +34,7 @@ const float SPHERE_SCALE_TIME = 1.5f;
 const float PRISM_SCALE_TIME  = 1.5f;
 const float FADE_TIME         = 2.0f;
 const float START_FADE_TIME   = 4.0f;
-const float TRAIL_FADE_TIME   = 2000.f;
+const float TRAIL_FADE_TIME   = 2500.f;
 
 const float FIXED_FOV  = 70.f;
 const float X_SPEED    = PI / 2;
