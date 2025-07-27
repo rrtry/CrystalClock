@@ -16,6 +16,7 @@
 
 using namespace std;
 
+const Color TRAIL_COLOR = { 133, 255, 255, 255 };
 const Vector3 PRISM_COLORS[] = {
     { 0.04f, 0.23f, 0.46f },
     { 0.17f, 0.03f, 0.45f },
@@ -24,8 +25,9 @@ const Vector3 PRISM_COLORS[] = {
 
 const int ORBS           = 7;
 const int TRAIL_SEGMENTS = 120;
+const int TRAIL_POINTS   = TRAIL_SEGMENTS + 1;
 
-const float TRAIL_WIDTH       = 2.0f;
+const float TRAIL_WIDTH       = 1.0f;
 const float ORB_SCALE         = 2.5f;
 const float MAX_SPHERE_RADIUS = 6.0f;
 const float MIN_SPHERE_RADIUS = MAX_SPHERE_RADIUS / 2;
@@ -34,7 +36,7 @@ const float SPHERE_SCALE_TIME = 1.5f;
 const float PRISM_SCALE_TIME  = 1.5f;
 const float FADE_TIME         = 2.0f;
 const float START_FADE_TIME   = 4.0f;
-const float TRAIL_FADE_TIME   = 2500.f;
+const float TRAIL_FADE_TIME   = 2000.f;
 
 const float FIXED_FOV  = 70.f;
 const float X_SPEED    = PI / 2;
@@ -108,6 +110,7 @@ Matrix TN = MatrixInvert(MatrixTranspose(TM));
 // Time structs
 Time currentTime;
 ElapsedSeconds elapsedSeconds;
+Duration frameDuration;
 
 Vector3 clockPosition = { 0.0f, MAX_SPHERE_RADIUS + 0.5f, 0.0f };
 Vector3 prismColor;
@@ -200,9 +203,50 @@ Vector3 GetOrbPosition(const TimePoint& prevTimePoint, float radius, float hourA
     return GetOrbPosition(prevSeconds.minute, radius, orbIndex, rotation);
 }
 
-//------------------------------------------------------------------------------------
-// Drawing functions
-//------------------------------------------------------------------------------------
+void GetOrbPositions(const TimePoint& prevTimePoint, Vector3* positions, float radius, float hourAngle, int orbIndex)
+{
+    Vector3 currentPosition  = GetOrbPosition(prevTimePoint, radius, hourAngle, orbIndex);
+    Vector3 previousPosition = GetOrbPosition(prevTimePoint - frameDuration, radius, hourAngle, orbIndex);
+    Vector3 nextPosition     = GetOrbPosition(prevTimePoint + frameDuration, radius, hourAngle, orbIndex);
+
+    positions[0] = previousPosition;
+    positions[1] = currentPosition;
+    positions[2] = nextPosition;
+}
+
+Vector3 GetSegmentNormal(Vector3* positions, const TimePoint& prevTimePoint, int pointIndex)
+{
+    Vector3 lineDir;
+    Vector3 previousPosition = positions[0];
+    Vector3 currentPosition  = positions[1];
+    Vector3 nextPosition     = positions[2];
+
+    if (pointIndex == 0) 
+    {
+        lineDir = Vector3Normalize(Vector3Subtract(nextPosition, currentPosition));
+    } 
+    else if (pointIndex == (TRAIL_POINTS - 1)) 
+    {
+        lineDir = Vector3Normalize(Vector3Subtract(currentPosition, previousPosition));
+    }
+    else 
+    {
+        lineDir = Vector3Normalize(Vector3Add(
+            Vector3Subtract(currentPosition, previousPosition), 
+            Vector3Subtract(nextPosition, currentPosition))
+        );
+    }
+
+    Vector3 viewDir = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+    Vector3 side    = Vector3CrossProduct(viewDir, lineDir);
+
+    if (FloatEquals(Vector3Length(side), 0.f)) 
+        side = Vector3CrossProduct(camera.up, lineDir);
+    
+    side = Vector3Normalize(side);
+    return Vector3Scale(side, TRAIL_WIDTH * 0.1f * 0.5f);
+}
+
 float GetSegmentAlpha(const TimePoint& prevTimePoint)
 {
     auto now    = currentTime.timePoint;
@@ -210,22 +254,38 @@ float GetSegmentAlpha(const TimePoint& prevTimePoint)
     auto millis = chrono::duration_cast<chrono::milliseconds>(diff).count();
     return Lerp(1.0f, 0.0f, Normalize(millis, 0.f, TRAIL_FADE_TIME));
 }
-
-void DrawTrailSegment(TimePoint& prevTimePoint, Vector3& lastPos, float radius, float hourAngle, int orbIndex)
-{
-    Vector3 prevPosition = GetOrbPosition(prevTimePoint, radius, hourAngle, orbIndex);
-    prevTimePoint -= chrono::milliseconds((int)(deltaTime * 1000.f));
-
-    DrawLine3D(lastPos, prevPosition, Fade(WHITE, GetSegmentAlpha(prevTimePoint)));
-    lastPos = prevPosition;
-}
-
+//------------------------------------------------------------------------------------
+// Drawing functions
+//------------------------------------------------------------------------------------
 void DrawTrail(TimePoint prevTimePoint, float radius, float hourAngle, int orbIndex)
 {
-    Vector3 lastPosition = GetOrbPosition(prevTimePoint, radius, hourAngle, orbIndex);
-    for (int j = 0; j < TRAIL_SEGMENTS; j++)
+    Vector3 positions[3];
+    for (int i = 0; i < TRAIL_POINTS - 1; i++)
     {
-        DrawTrailSegment(prevTimePoint, lastPosition, radius, hourAngle, orbIndex);
+        GetOrbPositions(prevTimePoint, positions, radius, hourAngle, orbIndex);
+        
+        Vector3 P0 = positions[1];
+        Vector3 P1 = positions[2];
+        Vector3 N0 = GetSegmentNormal(positions, prevTimePoint, i);
+        Vector3 N1 = GetSegmentNormal(positions, prevTimePoint, i + 1);
+
+        Vector3 A = Vector3Add(P0, N0);
+        Vector3 B = Vector3Subtract(P0, N0);
+        Vector3 C = Vector3Add(P1, N1);
+        Vector3 D = Vector3Subtract(P1, N1);
+
+        float fade = GetSegmentAlpha(prevTimePoint);
+        Color col  = {
+            (unsigned char)(TRAIL_COLOR.r * fade),
+            (unsigned char)(TRAIL_COLOR.g * fade),
+            TRAIL_COLOR.b,
+            (unsigned char)(TRAIL_COLOR.a * fade)
+        };
+
+        DrawTriangle3D(A, B, C, col);
+        DrawTriangle3D(C, B, D, col);
+
+        prevTimePoint -= frameDuration;
     }
 }
 
@@ -245,8 +305,11 @@ void DrawOrbs(float radius)
                 RL_SHADER_UNIFORM_VEC3
         );
 
-        DrawBillboard(camera, orbTexture, orbPosition, ORB_SCALE, WHITE);
-        DrawBillboard(camera, orbTexture, orbPosition, ORB_SCALE * 0.5, WHITE);
+        BeginShaderMode(orbShader);
+            DrawBillboard(camera, orbTexture, orbPosition, ORB_SCALE, WHITE);
+            DrawBillboard(camera, orbTexture, orbPosition, ORB_SCALE * 0.5, WHITE);
+        EndShaderMode();
+
         DrawTrail(currentTime.timePoint, radius, hourAngle, i);
     }
 }
@@ -435,7 +498,7 @@ void InitCamera()
 
 void InitWindow()
 {
-    SetConfigFlags(windowFlags | FLAG_WINDOW_RESIZABLE);
+    SetConfigFlags(windowFlags | FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT);
     InitWindow(screenWidth, screenHeight, "CrystalClock");
 
     if (screenWidth == 0 || screenHeight == 0)
@@ -686,6 +749,7 @@ void Update()
     GetElapsedSeconds(&elapsedSeconds, currentTime);
 
     deltaTime       = GetFrameTime();
+    frameDuration   = chrono::milliseconds(static_cast<long long>(deltaTime * 1000.f));
     elapsedTime     = (float)GetTime();
     secondsInMinute = elapsedSeconds.minute;
     secondsInHour   = elapsedSeconds.hour;
@@ -806,6 +870,7 @@ void Render()
     //------------------------------------------------------------------------------------
     // Orbs layer
     //------------------------------------------------------------------------------------
+    /*
     rlSetBlendMode(RL_BLEND_ADDITIVE);
     BeginTextureMode(orbsLayer);
         BeginMode3D(camera);
@@ -813,14 +878,13 @@ void Render()
             ClearBackground(Fade(BLACK, 0.0));
             rlDisableDepthMask();
 
-            BeginShaderMode(orbShader);
             DrawOrbs(sphereRadius);
-            EndShaderMode();
 
             rlEnableDepthMask();
         EndMode3D();
     EndTextureMode();
-
+    */
+    rlSetBlendMode(RL_BLEND_ADDITIVE);
     //------------------------------------------------------------------------------------
     // Clock layer
     //------------------------------------------------------------------------------------
@@ -859,7 +923,12 @@ void Render()
         if (showTime)
             DrawDateTime();
     }
-    DrawTextureRec(orbsLayer.texture,  { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, orbLayerTint);
+    //DrawTextureRec(orbsLayer.texture,  { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, orbLayerTint);
+        BeginMode3D(camera);
+            rlDisableDepthMask();
+            DrawOrbs(sphereRadius);
+            rlEnableDepthMask();
+        EndMode3D();
     EndDrawing();
 }
 

@@ -6,7 +6,7 @@
 
 using namespace std;
 using TimePoint = chrono::system_clock::time_point;
-using Duration  = chrono::duration<float, std::milli>;
+using Duration  = chrono::milliseconds;
 
 typedef struct 
 {
