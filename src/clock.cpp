@@ -252,7 +252,7 @@ float GetSegmentAlpha(const TimePoint& prevTimePoint)
     auto now    = currentTime.timePoint;
     auto diff   = now - prevTimePoint;
     auto millis = chrono::duration_cast<chrono::milliseconds>(diff).count();
-    return Lerp(1.0f, 0.0f, Normalize(millis, 0.f, TRAIL_FADE_TIME));
+    return Lerp(1.0f, 0.1f, Normalize(millis, 0.f, TRAIL_FADE_TIME));
 }
 //------------------------------------------------------------------------------------
 // Drawing functions
