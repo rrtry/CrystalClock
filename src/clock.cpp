@@ -23,6 +23,8 @@ const Vector3 PRISM_COLORS[] = {
     { 0.03f, 0.39f, 0.45f }
 };
 
+const char* WINDOW_TITLE = "CrystalClock";
+
 const int ORBS           = 7;
 const int TRAIL_SEGMENTS = 120;
 const int TRAIL_POINTS   = TRAIL_SEGMENTS + 1;
@@ -75,7 +77,6 @@ Music ambience;
 // Framebuffers
 //------------------------------------------------------------------------------------
 RenderTexture tunnelLayer;
-RenderTexture orbsLayer;
 RenderTexture clockLayer;
 
 //------------------------------------------------------------------------------------
@@ -498,8 +499,8 @@ void InitCamera()
 
 void InitWindow()
 {
-    SetConfigFlags(windowFlags | FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT);
-    InitWindow(screenWidth, screenHeight, "CrystalClock");
+    SetConfigFlags(windowFlags | FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT); // TODO: implement MSAA framebuffer for Android
+    InitWindow(screenWidth, screenHeight, WINDOW_TITLE);
 
     if (screenWidth == 0 || screenHeight == 0)
     {
@@ -553,7 +554,6 @@ void LoadResources()
     // Textures/models
     //------------------------------------------------------------------------------------
     tunnelLayer = LoadRenderTexture(screenWidth, screenHeight);
-    orbsLayer   = LoadRenderTexture(screenWidth, screenHeight);
     clockLayer  = LoadRenderTexture(screenWidth, screenHeight);
 
     prism = LoadModel("resources/prism.obj");
@@ -670,7 +670,6 @@ void UnloadResources()
     UnloadModel(tube);
 
     UnloadRenderTexture(tunnelLayer);
-    UnloadRenderTexture(orbsLayer);
     UnloadRenderTexture(clockLayer);
 }
 
@@ -696,11 +695,9 @@ void ResizeWindow()
         screenHeight = GetScreenHeight();
 
         UnloadRenderTexture(tunnelLayer);
-        UnloadRenderTexture(orbsLayer);
         UnloadRenderTexture(clockLayer);
 
         tunnelLayer = LoadRenderTexture(screenWidth, screenHeight);
-        orbsLayer   = LoadRenderTexture(screenWidth, screenHeight);
         clockLayer  = LoadRenderTexture(screenWidth, screenHeight);
 
         SetWindowSize(screenWidth, screenHeight);
@@ -818,6 +815,39 @@ void Update()
     }
 }
 
+void RenderLayers()
+{
+    BeginDrawing();
+        ClearBackground(BLACK);
+        if (showClock || fading)
+        {
+            rlSetBlendMode(RL_BLEND_ALPHA);
+            DrawTextureRec(tunnelLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
+
+            rlSetBlendMode(RL_BLEND_ADDITIVE);
+            if (showClock && !fading && (elapsedTime > START_FADE_TIME || !fadeIn))
+            {
+                BeginShaderMode(fxaaShader);
+                    DrawTextureRec(clockLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
+                EndShaderMode();
+            }
+            else
+            {
+                DrawTextureRec(clockLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
+            }
+
+            if (showTime)
+                DrawDateTime();
+        }
+        // TODO: implement MSAA framebuffer for Android
+        BeginMode3D(camera);
+            rlDisableDepthMask();
+            DrawOrbs(sphereRadius);
+            rlEnableDepthMask();
+        EndMode3D();
+    EndDrawing();
+}
+
 void Render()
 {
 #if !defined(WALLPAPER)
@@ -868,26 +898,9 @@ void Render()
     }
 
     //------------------------------------------------------------------------------------
-    // Orbs layer
-    //------------------------------------------------------------------------------------
-    /*
-    rlSetBlendMode(RL_BLEND_ADDITIVE);
-    BeginTextureMode(orbsLayer);
-        BeginMode3D(camera);
-
-            ClearBackground(Fade(BLACK, 0.0));
-            rlDisableDepthMask();
-
-            DrawOrbs(sphereRadius);
-
-            rlEnableDepthMask();
-        EndMode3D();
-    EndTextureMode();
-    */
-    rlSetBlendMode(RL_BLEND_ADDITIVE);
-    //------------------------------------------------------------------------------------
     // Clock layer
     //------------------------------------------------------------------------------------
+    rlSetBlendMode(RL_BLEND_ADDITIVE);
     if (showClock || fading)
     {
         BeginTextureMode(clockLayer);
@@ -899,37 +912,9 @@ void Render()
     }
 
     //------------------------------------------------------------------------------------
-    // Blend three layers
+    // Blend layers
     //------------------------------------------------------------------------------------
-    BeginDrawing();
-    ClearBackground(BLACK);
-    if (showClock || fading)
-    {
-        rlSetBlendMode(RL_BLEND_ALPHA);
-        DrawTextureRec(tunnelLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
-
-        rlSetBlendMode(RL_BLEND_ADDITIVE);
-        if (showClock && !fading && (elapsedTime > START_FADE_TIME || !fadeIn))
-        {
-            BeginShaderMode(fxaaShader);
-                DrawTextureRec(clockLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
-            EndShaderMode();
-        }
-        else
-        {
-            DrawTextureRec(clockLayer.texture, { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, clockLayerTint);
-        }
-
-        if (showTime)
-            DrawDateTime();
-    }
-    //DrawTextureRec(orbsLayer.texture,  { 0, 0, (float)screenWidth, (float) -screenHeight}, {0, 0}, orbLayerTint);
-        BeginMode3D(camera);
-            rlDisableDepthMask();
-            DrawOrbs(sphereRadius);
-            rlEnableDepthMask();
-        EndMode3D();
-    EndDrawing();
+    RenderLayers();
 }
 
 bool Initialize()
