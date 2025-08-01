@@ -22,7 +22,12 @@ android {
             enableV2Signing = true
         }
     }
-
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
+    }
     defaultConfig {
         applicationId = "com.rrtry.crystalclock"
         minSdk = 26
@@ -40,7 +45,6 @@ android {
         }
         signingConfig = signingConfigs.getByName("release-cfg")
     }
-
     /*
     splits {
         abi {

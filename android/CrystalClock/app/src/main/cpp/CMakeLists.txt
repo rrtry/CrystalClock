@@ -7,6 +7,7 @@ set(APP_LIB_NAME crystalclock)
 set(CMAKE_MESSAGE_LOG_LEVEL DEBUG)
 
 project("${APP_LIB_NAME}")
+add_link_options("LINKER:--build-id=none")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/deps/raylib)
 
