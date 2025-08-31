@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 	lumin::MonitorInfo monitorInfo = lumin::GetWallpaperTarget(GetTargetDisplay());
 
 	// Set resolution
-	SetWindowResolution(monitorInfo.width, monitorInfo.height);
+	SetWindowResolution(monitorInfo.workWidth, monitorInfo.workHeight);
 
 	// Initialize
 	SetShowTime(false);
