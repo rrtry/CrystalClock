@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 	lumin::MonitorInfo monitorInfo = lumin::GetWallpaperTarget(GetTargetDisplay());
 
 	// Set resolution
-	SetWindowResolution(monitorInfo.workWidth, monitorInfo.workHeight);
+	SetWindowResolution(monitorInfo.width, monitorInfo.height);
 
 	// Initialize
 	SetShowTime(false);
@@ -35,7 +35,6 @@ int main(int argc, char** argv)
 	// Main render loop.
 	while (!WindowShouldClose()) 
 	{
-
 		// skip rendering if the wallpaper is occluded more than 95%
 		if (lumin::IsMonitorOccluded(monitorInfo, 0.95)) 
 		{

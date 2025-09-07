@@ -23,17 +23,16 @@ if (NOT raylib_FOUND)
   endif()
 endif()
 
-set(LWP_GIT_TAG fix/window-behavior CACHE STRING "Git tag/branch for LuminWallpaper")
-FetchContent_Declare(
-  lumin
-  GIT_REPOSITORY https://github.com/rrtry/LuminWallpaper.git
-  GIT_TAG ${LWP_GIT_TAG}
-)
-FetchContent_MakeAvailable(lumin)
-
 set(BASE_SOURCES src/config.cpp src/config.h src/clock.cpp src/clock.h src/timeinfo.cpp src/timeinfo.h)
 if (${PLATFORM} STREQUAL "Desktop")
     if (DESKTOP_WALLPAPER)
+      set(LWP_GIT_TAG main CACHE STRING "Git tag/branch for LuminWallpaper")
+      FetchContent_Declare(
+        lumin
+        GIT_REPOSITORY https://github.com/jensroth-git/LuminWallpaper
+        GIT_TAG ${LWP_GIT_TAG}
+      )
+      FetchContent_MakeAvailable(lumin)
       add_executable(${PROJECT_NAME} src/lumin_main.cpp ${BASE_SOURCES})
       target_compile_definitions(
         ${PROJECT_NAME}
